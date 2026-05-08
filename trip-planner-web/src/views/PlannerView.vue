@@ -157,7 +157,9 @@ async function handleItemSubmit(data: any) {
   if (!activeDayId.value) return
   try {
     if (editingItem.value) {
-      await plannerStore.updateItem(activeDayId.value, editingItem.value.id, data)
+      // itemType is not updatable — strip it before sending to backend
+      const { itemType, ...updateData } = data
+      await plannerStore.updateItem(activeDayId.value, editingItem.value.id, updateData)
     } else {
       await plannerStore.addItem(activeDayId.value, data)
     }
