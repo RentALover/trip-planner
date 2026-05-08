@@ -4,7 +4,6 @@
       <div class="item-wrapper" :data-id="item.id">
         <ItemCard :item="item" @edit="$emit('editItem', item)" @delete="$emit('deleteItem', $event)" />
       </div>
-      <!-- Transport connector between items -->
       <div v-if="index < items.length - 1" class="between-items">
         <template v-if="getTransport(item.id, items[index + 1].id)">
           <TransportConnector
@@ -14,15 +13,16 @@
           />
         </template>
         <div v-else class="add-transport-btn" @click="$emit('addTransport', item, items[index + 1])">
-          <el-icon><Plus /></el-icon>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           <span>添加交通方式</span>
         </div>
       </div>
     </template>
 
     <div v-if="items.length === 0" class="empty-day">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="10" r="3"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
       <p>这一天还没有行程项</p>
-      <el-button type="primary" size="small" @click="$emit('addItem')">添加第一个行程项</el-button>
+      <el-button type="primary" @click="$emit('addItem')">添加第一个行程项</el-button>
     </div>
   </div>
 </template>
@@ -48,7 +48,7 @@ function getTransport(fromId: number, toId: number): TransportData | undefined {
   return props.transports.find(t => t.fromItemId === fromId && t.toItemId === toId)
 }
 
-let sortableInstance: Sortable | null = null
+let sortableInstance: any = null
 
 onMounted(() => {
   if (listRef.value) {
@@ -68,7 +68,7 @@ onMounted(() => {
 })
 
 watch(() => props.items.length, () => {
-  // Sortable auto-updates; no action needed
+  // Sortable auto-updates
 })
 </script>
 
@@ -80,24 +80,32 @@ watch(() => props.items.length, () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 6px;
-  margin: 2px 0 2px 20px;
-  border: 1px dashed #DCDFE6;
-  border-radius: 6px;
-  color: #909399;
+  gap: 6px;
+  padding: 8px;
+  margin: 2px 0 2px 28px;
+  border: 1px dashed var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text-placeholder);
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
 }
 .add-transport-btn:hover {
-  border-color: #409EFF;
-  color: #409EFF;
-  background: #ECF5FF;
+  border-color: var(--color-primary-light);
+  color: var(--color-primary);
+  background: #fdfaf7;
 }
 .empty-day {
   text-align: center;
-  padding: 40px;
-  color: #909399;
+  padding: 48px 20px;
+  color: var(--color-text-secondary);
+}
+.empty-day svg {
+  color: #c8bdab;
+  margin-bottom: 12px;
+}
+.empty-day p {
+  margin: 0 0 16px;
+  font-size: 14px;
 }
 </style>

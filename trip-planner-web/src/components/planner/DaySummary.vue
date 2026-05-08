@@ -4,23 +4,25 @@
     <div class="summary-stats">
       <div class="stat-item">
         <span class="stat-label">行程项</span>
-        <span class="stat-value">{{ itemCount }}个</span>
+        <span class="stat-value">{{ itemCount }} 个</span>
       </div>
       <div class="stat-item">
         <span class="stat-label">交通段</span>
-        <span class="stat-value">{{ transportCount }}个</span>
+        <span class="stat-value">{{ transportCount }} 个</span>
       </div>
-      <div class="stat-item">
+      <div class="stat-item highlight">
         <span class="stat-label">当日费用</span>
         <span class="stat-value cost">¥{{ dayCost.toFixed(2) }}</span>
       </div>
     </div>
     <div class="summary-actions">
-      <el-button size="small" @click="$emit('addItem')">
-        <el-icon><Plus /></el-icon>添加行程项
+      <el-button class="action-btn" @click="$emit('addItem')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        添加行程项
       </el-button>
-      <el-button size="small" @click="$emit('generateDays')">
-        <el-icon><RefreshRight /></el-icon>重新生成日程
+      <el-button class="action-btn secondary" @click="$emit('generateDays')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        重新生成
       </el-button>
     </div>
   </div>
@@ -46,16 +48,55 @@ const dayCost = computed(() => {
 
 <style scoped>
 .day-summary {
-  background: #fff;
-  border-radius: 8px;
-  padding: 16px;
-  border: 1px solid #EBEEF5;
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  border: 1px solid var(--color-border-light);
 }
-h4 { margin: 0 0 12px 0; font-size: 14px; color: #303133; }
-.summary-stats { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
-.stat-item { display: flex; justify-content: space-between; font-size: 13px; }
-.stat-label { color: #909399; }
-.stat-value { font-weight: 500; }
-.stat-value.cost { color: #F56C6C; }
-.summary-actions { display: flex; flex-direction: column; gap: 8px; }
+h4 {
+  margin: 0 0 14px 0;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: 0.02em;
+}
+.summary-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--color-border-light);
+}
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.stat-item.highlight {
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border-light);
+}
+.stat-label { color: var(--color-text-secondary); }
+.stat-value { font-weight: 600; color: var(--color-text-primary); }
+.stat-value.cost {
+  color: var(--color-primary);
+  font-size: 16px;
+  font-family: var(--font-display);
+}
+.summary-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.action-btn {
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  font-weight: 500;
+  width: 100%;
+}
 </style>

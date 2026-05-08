@@ -1,6 +1,6 @@
 <template>
   <el-dialog v-model="visible" :title="isEdit ? '编辑交通方式' : '添加交通方式'"
-    width="480px" @close="$emit('cancel')">
+    width="480px" class="transport-dialog" @close="$emit('cancel')">
     <div v-if="!isEdit" class="from-to-hint">
       从 <strong>{{ fromTitle }}</strong> 到 <strong>{{ toTitle }}</strong>
     </div>
@@ -110,12 +110,13 @@ async function handleSubmit() {
 
 <style scoped>
 .from-to-hint {
-  padding: 8px 12px;
-  background: #ECF5FF;
-  border-radius: 4px;
-  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: #f9f2ee;
+  border-radius: 8px;
+  margin-bottom: 18px;
   font-size: 13px;
-  color: #409EFF;
+  color: var(--color-primary);
+  border-left: 3px solid var(--color-primary-light);
 }
 .transport-form { margin-top: 8px; }
 </style>

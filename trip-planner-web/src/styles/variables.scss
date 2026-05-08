@@ -1,28 +1,112 @@
-$primary: #409EFF;
-$primary-light: #66B1FF;
-$success: #67C23A;
-$warning: #E6A23C;
-$danger: #F56C6C;
-$text-primary: #303133;
-$text-regular: #606266;
-$text-secondary: #909399;
-$bg-page: #F5F7FA;
-$bg-white: #FFFFFF;
-$border: #DCDFE6;
-$shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+// ===== Wanderlust Journal Design Tokens =====
+// 暖调大地色系 · 复古制图风格
 
-// Travel theme colors
-$travel-sky: #42A5F5;
-$travel-forest: #66BB6A;
-$travel-sunset: #FF7043;
-$travel-ocean: #26C6DA;
-$travel-sand: #FFCA28;
+// CSS Custom Properties for Element Plus theming
+:root {
+  // Brand
+  --color-primary: #c47b5a;
+  --color-primary-light: #d9a38b;
+  --color-primary-dark: #a05d3f;
+  --color-accent: #3d6b6b;
+  --color-accent-light: #5a8f8f;
 
-// Transport colors
-$transport-walk: #66BB6A;
-$transport-bus: #42A5F5;
-$transport-subway: #26C6DA;
-$transport-taxi: #FFA726;
-$transport-ride-hail: #AB47BC;
-$transport-self-drive: #78909C;
-$transport-bike: #9CCC65;
+  // Semantic
+  --color-success: #7b8c4e;
+  --color-warning: #c4963e;
+  --color-danger: #b8453e;
+  --color-info: #6b7d8b;
+
+  // Text
+  --color-text-primary: #2c2416;
+  --color-text-regular: #5c5343;
+  --color-text-secondary: #8b7e6a;
+  --color-text-placeholder: #b8ae9c;
+
+  // Surfaces
+  --color-bg-page: #f9f5ed;
+  --color-bg-surface: #fffdf7;
+  --color-bg-elevated: #ffffff;
+  --color-bg-muted: #f4efe4;
+
+  // Borders
+  --color-border: #e8dfd0;
+  --color-border-light: #f2ebe0;
+
+  // Shadows
+  --shadow-sm: 0 1px 3px rgba(44, 36, 22, 0.06);
+  --shadow-md: 0 4px 16px rgba(44, 36, 22, 0.08);
+  --shadow-lg: 0 8px 30px rgba(44, 36, 22, 0.1);
+
+  // Radius
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  // Fonts
+  --font-display: 'Noto Serif SC', 'STSong', 'SimSun', 'Songti SC', serif;
+  --font-body: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+
+  // Element Plus overrides
+  --el-color-primary: #c47b5a;
+  --el-color-primary-light-3: #d9a38b;
+  --el-color-primary-light-5: #e4bfad;
+  --el-color-primary-light-7: #eed9cf;
+  --el-color-primary-light-8: #f3e5de;
+  --el-color-primary-light-9: #f9f2ee;
+  --el-color-primary-dark-2: #a05d3f;
+
+  --el-color-success: #7b8c4e;
+  --el-color-warning: #c4963e;
+  --el-color-danger: #b8453e;
+  --el-color-info: #6b7d8b;
+
+  --el-text-color-primary: #2c2416;
+  --el-text-color-regular: #5c5343;
+  --el-text-color-secondary: #8b7e6a;
+  --el-text-color-placeholder: #b8ae9c;
+
+  --el-bg-color: #fffdf7;
+  --el-bg-color-page: #f9f5ed;
+  --el-bg-color-overlay: #ffffff;
+
+  --el-border-color: #e8dfd0;
+  --el-border-color-light: #f2ebe0;
+  --el-border-color-lighter: #f7f2ea;
+
+  --el-border-radius-base: 6px;
+  --el-border-radius-small: 4px;
+  --el-border-radius-round: 20px;
+
+  --el-box-shadow-light: 0 1px 3px rgba(44, 36, 22, 0.06);
+  --el-box-shadow: 0 4px 16px rgba(44, 36, 22, 0.08);
+  --el-box-shadow-dark: 0 8px 30px rgba(44, 36, 22, 0.1);
+
+  --el-font-family: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+
+  // Input/focus
+  --el-input-focus-border-color: #c47b5a;
+  --el-input-hover-border-color: #d9a38b;
+}
+
+// ===== SCSS Variables (for global.scss mixins) =====
+$primary: var(--color-primary);
+$primary-light: var(--color-primary-light);
+$success: var(--color-success);
+$warning: var(--color-warning);
+$danger: var(--color-danger);
+$text-primary: var(--color-text-primary);
+$text-regular: var(--color-text-regular);
+$text-secondary: var(--color-text-secondary);
+$bg-page: var(--color-bg-page);
+$bg-white: var(--color-bg-surface);
+$border: var(--color-border);
+$shadow: var(--shadow-md);
+
+// Transport colors (keep semantic names)
+$transport-walk: #7b8c4e;
+$transport-bus: #5a8b9e;
+$transport-subway: #3d6b6b;
+$transport-taxi: #c4963e;
+$transport-ride-hail: #9b6b9e;
+$transport-self-drive: #6b7d8b;
+$transport-bike: #8a9e5a;

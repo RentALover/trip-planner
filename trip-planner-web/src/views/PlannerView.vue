@@ -1,11 +1,20 @@
 <template>
   <div class="planner-page">
     <div class="planner-header">
-      <el-button text @click="$router.back()"><el-icon><ArrowLeft /></el-icon>返回</el-button>
-      <h2 v-if="trip">{{ trip.tripName }} - 日程规划</h2>
+      <button class="back-btn" @click="$router.back()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        返回
+      </button>
+      <h2 v-if="trip" class="planner-title">{{ trip.tripName }}</h2>
       <div class="header-actions">
-        <el-button @click="handleGenerateDays" :disabled="!trip">自动生成日程</el-button>
-        <el-button @click="$router.push(`/trips/${tripId}/budget`)">查看预算</el-button>
+        <el-button class="action-btn" @click="handleGenerateDays" :disabled="!trip">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          自动生成日程
+        </el-button>
+        <el-button class="action-btn" @click="$router.push(`/trips/${tripId}/budget`)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          查看预算
+        </el-button>
       </div>
     </div>
 
@@ -28,14 +37,15 @@
             />
           </template>
           <div v-else class="empty-day-state">
-            <el-empty description="这一天还没有行程项" :image-size="100">
-              <el-button type="primary" @click="showItemDialog = true">添加行程项</el-button>
-            </el-empty>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="10" r="3"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+            <p>这一天还没有行程项</p>
+            <el-button type="primary" @click="showItemDialog = true">添加行程项</el-button>
           </div>
 
           <div v-if="currentItems.length > 0" class="add-item-bottom">
             <el-button @click="showItemDialog = true">
-              <el-icon><Plus /></el-icon>添加行程项
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              添加行程项
             </el-button>
           </div>
         </div>
@@ -52,9 +62,9 @@
     </div>
 
     <div v-else-if="trip" class="no-days">
-      <el-empty description="还没有日程安排">
-        <el-button type="primary" @click="handleGenerateDays">自动生成日程</el-button>
-      </el-empty>
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="10" r="3"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+      <p>还没有日程安排</p>
+      <el-button type="primary" size="large" @click="handleGenerateDays">自动生成日程</el-button>
     </div>
 
     <!-- Dialogs -->
@@ -76,11 +86,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { usePlannerStore } from '@/stores/planner'
 import { tripApi, type TripData } from '@/api/trip'
-import type { ItemData, ItemCreateReq } from '@/api/item'
+import type { ItemData } from '@/api/item'
 import type { TransportData, TransportCreateReq } from '@/api/transport'
 import { ElMessage } from 'element-plus'
 import DayTabs from '@/components/planner/DayTabs.vue'
@@ -96,11 +106,9 @@ const plannerStore = usePlannerStore()
 const trip = ref<TripData | null>(null)
 const activeDayId = ref<number | null>(null)
 
-// Item dialog
 const showItemDialog = ref(false)
 const editingItem = ref<ItemData | null>(null)
 
-// Transport dialog
 const showTransportDialog = ref(false)
 const editingTransport = ref<TransportData | null>(null)
 const transportFromId = ref(0)
@@ -108,7 +116,6 @@ const transportToId = ref(0)
 const transportFromTitle = ref('')
 const transportToTitle = ref('')
 
-// Delete confirm
 const showDeleteConfirm = ref(false)
 const deleteMessage = ref('')
 const deleting = ref(false)
@@ -141,7 +148,6 @@ async function handleGenerateDays() {
   }
 }
 
-// Item handlers
 function handleEditItem(item: ItemData) {
   editingItem.value = item
   showItemDialog.value = true
@@ -150,14 +156,8 @@ function handleEditItem(item: ItemData) {
 async function handleItemSubmit(data: any) {
   if (!activeDayId.value) return
   try {
-    if (editingItem.value) {
-      await plannerStore.addItem(activeDayId.value, data)
-      // Refresh to get updated state
-      await plannerStore.fetchDayDetail(tripId, activeDayId.value)
-    } else {
-      await plannerStore.addItem(activeDayId.value, data)
-      await plannerStore.fetchDayDetail(tripId, activeDayId.value)
-    }
+    await plannerStore.addItem(activeDayId.value, data)
+    await plannerStore.fetchDayDetail(tripId, activeDayId.value)
     editingItem.value = null
   } catch { /* error handled by interceptor */ }
 }
@@ -171,7 +171,6 @@ function handleDeleteItem(itemId: number) {
   showDeleteConfirm.value = true
 }
 
-// Transport handlers
 function handleAddTransportClick(fromItem: ItemData, toItem: ItemData) {
   transportFromId.value = fromItem.id
   transportToId.value = toItem.id
@@ -239,26 +238,96 @@ async function confirmDelete() {
 .planner-page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 12px 20px;
+  padding: 16px 20px;
 }
+
+/* Header */
 .planner-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
 }
-.planner-header h2 { margin: 0; font-size: 18px; flex: 1; }
-.header-actions { display: flex; gap: 8px; }
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+}
+.back-btn:hover {
+  border-color: var(--color-primary-light);
+  color: var(--color-primary);
+  background: #fdfaf7;
+}
+.planner-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  flex: 1;
+  letter-spacing: 0.02em;
+}
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+}
+
+/* Grid layout */
 .planner-body {
   display: grid;
-  grid-template-columns: 1fr 240px;
-  gap: 20px;
+  grid-template-columns: 1fr 260px;
+  gap: 24px;
 }
+.planner-sidebar {
+  position: sticky;
+  top: 76px;
+  align-self: start;
+}
+
+/* Day content */
 .day-content { min-height: 200px; }
-.add-item-bottom { margin-top: 12px; text-align: center; }
-.empty-day-state { padding: 40px 0; }
-.no-days { padding: 60px 0; }
+.add-item-bottom {
+  margin-top: 16px;
+  text-align: center;
+}
+.add-item-bottom .el-button {
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Empty states */
+.empty-day-state {
+  text-align: center;
+  padding: 56px 20px;
+  color: var(--color-text-secondary);
+}
+.empty-day-state svg { color: #c8bdab; margin-bottom: 12px; }
+.empty-day-state p { margin: 0 0 16px; font-size: 14px; }
+
+.no-days {
+  text-align: center;
+  padding: 80px 0;
+  color: var(--color-text-secondary);
+}
+.no-days svg { color: #c8bdab; margin-bottom: 16px; }
+.no-days p { margin: 0 0 20px; font-size: 15px; }
 
 @media (max-width: 1023px) {
   .planner-body {
@@ -267,6 +336,7 @@ async function confirmDelete() {
   .planner-sidebar {
     order: -1;
     margin-bottom: 16px;
+    position: static;
   }
 }
 </style>

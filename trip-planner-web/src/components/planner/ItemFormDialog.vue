@@ -1,5 +1,6 @@
 <template>
   <el-dialog v-model="visible" :title="isEdit ? '编辑行程项' : '添加行程项'" width="520px"
+    class="item-dialog"
     @close="$emit('cancel')">
     <el-form :model="form" :rules="rules" ref="formRef" label-width="80px">
       <el-form-item label="类型" prop="itemType">

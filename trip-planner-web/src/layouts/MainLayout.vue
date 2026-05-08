@@ -1,17 +1,23 @@
 <template>
   <div class="main-layout">
-    <el-header class="app-header">
+    <header class="app-header">
       <div class="header-left">
         <router-link to="/" class="logo">
-          <el-icon :size="24"><MapLocation /></el-icon>
-          <span>行程DIY规划</span>
+          <div class="logo-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="10" r="3"/>
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+            </svg>
+          </div>
+          <span class="logo-text">行程DIY规划</span>
         </router-link>
       </div>
       <div class="header-right">
-        <el-dropdown trigger="click">
+        <el-dropdown trigger="click" popper-class="header-dropdown">
           <span class="user-info">
-            <el-avatar :size="32" :src="userStore.userInfo?.avatarUrl" />
+            <el-avatar :size="34" :src="userStore.userInfo?.avatarUrl" class="user-avatar" />
             <span class="username">{{ userStore.userInfo?.nickname || userStore.userInfo?.username }}</span>
+            <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </span>
           <template #dropdown>
             <el-dropdown-menu>
@@ -25,17 +31,23 @@
           </template>
         </el-dropdown>
       </div>
-    </el-header>
-    <el-main>
-      <router-view />
-    </el-main>
+    </header>
+    <main class="app-main">
+      <router-view v-slot="{ Component }">
+        <transition name="page-fade" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
+    </main>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useUserStore } from '@/stores/user'
+import { useRouter } from 'vue-router'
 
 const userStore = useUserStore()
+const router = useRouter()
 
 function handleLogout() {
   userStore.logout()
@@ -53,22 +65,33 @@ function handleLogout() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 28px;
   height: 60px;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  background: #1e2d3d;
   position: sticky;
   top: 0;
   z-index: 100;
+  backdrop-filter: blur(12px);
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  color: #f0e6d3;
+  text-decoration: none;
+}
+.logo:hover { color: #f0e6d3; }
+.logo-icon {
+  display: flex;
+  align-items: center;
+  color: #d9a38b;
+}
+.logo-text {
+  font-family: var(--font-display);
   font-size: 18px;
   font-weight: 600;
-  color: #303133;
+  letter-spacing: 0.03em;
 }
 
 .header-right {
@@ -81,16 +104,43 @@ function handleLogout() {
   align-items: center;
   gap: 8px;
   cursor: pointer;
+  color: #c8bdab;
+  transition: color 0.2s;
 }
-
+.user-info:hover { color: #f0e6d3; }
 .username {
   font-size: 14px;
-  color: #606266;
+  font-weight: 500;
+}
+.chevron {
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+.user-info:hover .chevron { opacity: 0.8; }
+
+.user-avatar {
+  border: 2px solid #3d6b6b;
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Page transition */
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.page-fade-enter-from,
+.page-fade-leave-to {
+  opacity: 0;
 }
 
 @media (max-width: 768px) {
   .app-header {
-    padding: 0 12px;
+    padding: 0 16px;
   }
   .username {
     display: none;

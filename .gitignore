@@ -15,6 +15,10 @@ target/
 node_modules/
 dist/
 
+# Generated JS from tsc (source is TypeScript)
+trip-planner-web/src/**/*.js
+trip-planner-web/src/**/*.js.map
+
 # Env & logs
 *.log
 .env.local

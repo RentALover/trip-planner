@@ -1,43 +1,49 @@
 <template>
   <div class="page-container form-page">
-    <h2>个人信息</h2>
-    <el-form v-if="profile" :model="profile" ref="formRef" label-width="100px" class="profile-form">
-      <el-form-item label="用户名">
-        <el-input :model-value="profile.username" disabled />
-      </el-form-item>
-      <el-form-item label="昵称">
-        <el-input v-model="profile.nickname" />
-      </el-form-item>
-      <el-form-item label="邮箱">
-        <el-input v-model="profile.email" />
-      </el-form-item>
-      <el-form-item label="手机号">
-        <el-input v-model="profile.phone" />
-      </el-form-item>
-      <el-form-item label="个人简介">
-        <el-input v-model="profile.bio" type="textarea" :rows="3" />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
-      </el-form-item>
-    </el-form>
+    <h2 class="page-title">个人信息</h2>
+
+    <div class="content-card">
+      <el-form v-if="profile" :model="profile" ref="formRef" label-width="100px" class="profile-form">
+        <el-form-item label="用户名">
+          <el-input :model-value="profile.username" disabled />
+        </el-form-item>
+        <el-form-item label="昵称">
+          <el-input v-model="profile.nickname" />
+        </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="profile.email" />
+        </el-form-item>
+        <el-form-item label="手机号">
+          <el-input v-model="profile.phone" />
+        </el-form-item>
+        <el-form-item label="个人简介">
+          <el-input v-model="profile.bio" type="textarea" :rows="3" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
 
     <el-divider />
+
     <h3>修改密码</h3>
-    <el-form :model="passwordForm" ref="passwordFormRef" label-width="100px" class="password-form">
-      <el-form-item label="原密码" prop="oldPassword"
-        :rules="[{ required: true, message: '请输入原密码', trigger: 'blur' }]">
-        <el-input v-model="passwordForm.oldPassword" type="password" show-password />
-      </el-form-item>
-      <el-form-item label="新密码" prop="newPassword"
-        :rules="[{ required: true, message: '请输入新密码', trigger: 'blur' },
-                 { min: 6, message: '密码至少6位', trigger: 'blur' }]">
-        <el-input v-model="passwordForm.newPassword" type="password" show-password />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" :loading="changingPwd" @click="handleChangePassword">修改密码</el-button>
-      </el-form-item>
-    </el-form>
+    <div class="content-card">
+      <el-form :model="passwordForm" ref="passwordFormRef" label-width="100px" class="password-form">
+        <el-form-item label="原密码" prop="oldPassword"
+          :rules="[{ required: true, message: '请输入原密码', trigger: 'blur' }]">
+          <el-input v-model="passwordForm.oldPassword" type="password" show-password />
+        </el-form-item>
+        <el-form-item label="新密码" prop="newPassword"
+          :rules="[{ required: true, message: '请输入新密码', trigger: 'blur' },
+                   { min: 6, message: '密码至少6位', trigger: 'blur' }]">
+          <el-input v-model="passwordForm.newPassword" type="password" show-password />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :loading="changingPwd" @click="handleChangePassword">修改密码</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
   </div>
 </template>
 
@@ -71,9 +77,7 @@ async function handleSave() {
       bio: profile.value.bio
     })
     ElMessage.success('保存成功')
-  } finally {
-    saving.value = false
-  }
+  } finally { saving.value = false }
 }
 
 async function handleChangePassword() {
@@ -85,13 +89,30 @@ async function handleChangePassword() {
     ElMessage.success('密码修改成功')
     passwordForm.oldPassword = ''
     passwordForm.newPassword = ''
-  } finally {
-    changingPwd.value = false
-  }
+  } finally { changingPwd.value = false }
 }
 </script>
 
 <style scoped>
 .form-page { max-width: 600px; }
-.profile-form, .password-form { margin-top: 20px; }
+.page-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 20px;
+  letter-spacing: 0.03em;
+}
+h3 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 16px;
+}
+.content-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: 24px;
+}
+.profile-form, .password-form { margin: 0; }
 </style>

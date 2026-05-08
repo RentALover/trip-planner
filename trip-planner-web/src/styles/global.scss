@@ -4,42 +4,64 @@
   box-sizing: border-box;
 }
 
-body {
-  background-color: $bg-page;
-  color: $text-primary;
+html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background-color: $bg-page;
+  color: $text-primary;
+  font-family: var(--font-body);
+  line-height: 1.6;
+  // Subtle grain texture via SVG noise
+  &::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 256px 256px;
+  }
 }
 
 a {
   color: $primary;
   text-decoration: none;
+  transition: color 0.2s;
+  &:hover { color: var(--color-primary-dark); }
 }
 
+// ===== Layout utilities =====
 .page-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 24px 20px;
 }
 
+// ===== Card elevation =====
 .card-hover {
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
   &:hover {
     transform: translateY(-2px);
     box-shadow: $shadow;
   }
 }
 
-// Transport connector colors
-.transport-walk { border-color: $transport-walk; color: $transport-walk; }
-.transport-bus { border-color: $transport-bus; color: $transport-bus; }
-.transport-subway { border-color: $transport-subway; color: $transport-subway; }
-.transport-taxi { border-color: $transport-taxi; color: $transport-taxi; }
-.transport-ride-hail { border-color: $transport-ride-hail; color: $transport-ride-hail; }
-.transport-self-drive { border-color: $transport-self-drive; color: $transport-self-drive; }
-.transport-bike { border-color: $transport-bike; color: $transport-bike; }
+// ===== Transport connector colors =====
+.transport-walk { border-left-color: $transport-walk !important; .transport-type { color: $transport-walk; } }
+.transport-bus { border-left-color: $transport-bus !important; .transport-type { color: $transport-bus; } }
+.transport-subway { border-left-color: $transport-subway !important; .transport-type { color: $transport-subway; } }
+.transport-taxi { border-left-color: $transport-taxi !important; .transport-type { color: $transport-taxi; } }
+.transport-ride-hail { border-left-color: $transport-ride-hail !important; .transport-type { color: $transport-ride-hail; } }
+.transport-self-drive { border-left-color: $transport-self-drive !important; .transport-type { color: $transport-self-drive; } }
+.transport-bike { border-left-color: $transport-bike !important; .transport-type { color: $transport-bike; } }
 
-// Responsive
+// ===== Responsive =====
 @media (max-width: 768px) {
   .page-container {
     padding: 12px;

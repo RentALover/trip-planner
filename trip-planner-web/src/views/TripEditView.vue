@@ -1,41 +1,43 @@
 <template>
   <div class="page-container form-page" v-loading="loading">
-    <h2>编辑行程</h2>
-    <el-form v-if="form.tripName !== undefined" :model="form" ref="formRef" label-width="100px" class="trip-form">
-      <el-form-item label="行程名称" prop="tripName"
-        :rules="[{ required: true, message: '请输入行程名称', trigger: 'blur' }]">
-        <el-input v-model="form.tripName" />
-      </el-form-item>
-      <el-form-item label="目的地" prop="destination"
-        :rules="[{ required: true, message: '请输入目的地', trigger: 'blur' }]">
-        <el-input v-model="form.destination" />
-      </el-form-item>
-      <el-row :gutter="20">
-        <el-col :span="12">
-          <el-form-item label="出发日期">
-            <el-date-picker v-model="form.startDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="返程日期">
-            <el-date-picker v-model="form.endDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
-          </el-form-item>
-        </el-col>
-      </el-row>
-      <el-form-item label="出行人数">
-        <el-input-number v-model="form.numPeople" :min="1" :max="99" />
-      </el-form-item>
-      <el-form-item label="预算金额">
-        <el-input-number v-model="form.totalBudget" :min="0" :precision="2" :controls="false" style="width: 200px" />
-      </el-form-item>
-      <el-form-item label="备注">
-        <el-input v-model="form.notes" type="textarea" :rows="3" />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
-        <el-button @click="$router.back()">取消</el-button>
-      </el-form-item>
-    </el-form>
+    <h2 class="page-title">编辑行程</h2>
+    <div class="content-card">
+      <el-form v-if="form.tripName !== undefined" :model="form" ref="formRef" label-width="100px" class="trip-form">
+        <el-form-item label="行程名称" prop="tripName"
+          :rules="[{ required: true, message: '请输入行程名称', trigger: 'blur' }]">
+          <el-input v-model="form.tripName" />
+        </el-form-item>
+        <el-form-item label="目的地" prop="destination"
+          :rules="[{ required: true, message: '请输入目的地', trigger: 'blur' }]">
+          <el-input v-model="form.destination" />
+        </el-form-item>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="出发日期">
+              <el-date-picker v-model="form.startDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="返程日期">
+              <el-date-picker v-model="form.endDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item label="出行人数">
+          <el-input-number v-model="form.numPeople" :min="1" :max="99" />
+        </el-form-item>
+        <el-form-item label="预算金额">
+          <el-input-number v-model="form.totalBudget" :min="0" :precision="2" :controls="false" style="width: 200px" />
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input v-model="form.notes" type="textarea" :rows="3" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
+          <el-button @click="$router.back()">取消</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
   </div>
 </template>
 
@@ -72,9 +74,7 @@ onMounted(async () => {
       numPeople: trip.numPeople, totalBudget: trip.totalBudget,
       notes: trip.notes || ''
     })
-  } finally {
-    loading.value = false
-  }
+  } finally { loading.value = false }
 })
 
 async function handleSave() {
@@ -85,23 +85,32 @@ async function handleSave() {
   saving.value = true
   try {
     await tripApi.update(tripId, {
-      tripName: form.tripName,
-      destination: form.destination,
-      startDate: form.startDate,
-      endDate: form.endDate,
+      tripName: form.tripName, destination: form.destination,
+      startDate: form.startDate, endDate: form.endDate,
       numPeople: form.numPeople,
       totalBudget: form.totalBudget ?? undefined,
       notes: form.notes
     })
     ElMessage.success('保存成功')
     router.push(`/trips/${tripId}`)
-  } finally {
-    saving.value = false
-  }
+  } finally { saving.value = false }
 }
 </script>
 
 <style scoped>
 .form-page { max-width: 680px; }
-.trip-form { margin-top: 20px; }
+.page-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 20px;
+  letter-spacing: 0.03em;
+}
+.content-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: 24px;
+}
+.trip-form { margin: 0; }
 </style>
