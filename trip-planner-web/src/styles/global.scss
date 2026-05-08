@@ -1,0 +1,47 @@
+@use './variables.scss' as *;
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: $bg-page;
+  color: $text-primary;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: $primary;
+  text-decoration: none;
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.card-hover {
+  transition: transform 0.2s, box-shadow 0.2s;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow;
+  }
+}
+
+// Transport connector colors
+.transport-walk { border-color: $transport-walk; color: $transport-walk; }
+.transport-bus { border-color: $transport-bus; color: $transport-bus; }
+.transport-subway { border-color: $transport-subway; color: $transport-subway; }
+.transport-taxi { border-color: $transport-taxi; color: $transport-taxi; }
+.transport-ride-hail { border-color: $transport-ride-hail; color: $transport-ride-hail; }
+.transport-self-drive { border-color: $transport-self-drive; color: $transport-self-drive; }
+.transport-bike { border-color: $transport-bike; color: $transport-bike; }
+
+// Responsive
+@media (max-width: 768px) {
+  .page-container {
+    padding: 12px;
+  }
+}
