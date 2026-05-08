@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { dayApi, type DayData, type DayDetailData } from '@/api/day'
-import { itemApi, type ItemData, type ItemCreateReq, type ReorderResult } from '@/api/item'
+import { itemApi, type ItemData, type ItemCreateReq, type ReorderResult, type ItemBatchTimeUpdateReq } from '@/api/item'
 import { transportApi, type TransportData, type TransportCreateReq } from '@/api/transport'
 import { ElMessage } from 'element-plus'
 
@@ -81,9 +81,22 @@ export const usePlannerStore = defineStore('planner', () => {
     return result
   }
 
+  async function batchUpdateItemTimes(dayId: number, data: ItemBatchTimeUpdateReq) {
+    const updatedItems = await itemApi.batchUpdateTimes(dayId, data)
+    if (currentDay.value && currentDay.value.id === dayId) {
+      const updatedMap = new Map(updatedItems.map(i => [i.id, i]))
+      currentDay.value.items = currentDay.value.items.map(item => {
+        const updated = updatedMap.get(item.id)
+        return updated ? { ...item, ...updated } : item
+      })
+    }
+    return updatedItems
+  }
+
   return {
     days, currentDay, loading,
     fetchDays, generateDays, fetchDayDetail,
-    addItem, updateItem, deleteItem, addTransport, deleteTransport, reorderItems
+    addItem, updateItem, deleteItem, addTransport, deleteTransport, reorderItems,
+    batchUpdateItemTimes
   }
 })

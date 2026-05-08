@@ -16,6 +16,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -49,6 +50,11 @@ public class ItemServiceImpl implements ItemService {
     public ItemResp create(Long userId, Long dayId, ItemCreateReq req) {
         TripDay day = validateDayOwnership(userId, dayId);
 
+        // Validate time overlap
+        if (req.getStartTime() != null && req.getEndTime() != null) {
+            checkTimeOverlap(dayId, null, req.getStartTime(), req.getEndTime());
+        }
+
         TripItem item = new TripItem();
         BeanUtils.copyProperties(req, item);
         item.setDayId(dayId);
@@ -74,6 +80,13 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public ItemResp update(Long userId, Long dayId, Long itemId, ItemUpdateReq req) {
         TripItem item = findAndValidate(userId, dayId, itemId);
+
+        // Validate time overlap (use updated values if provided, otherwise existing)
+        LocalTime newStart = req.getStartTime() != null ? req.getStartTime() : item.getStartTime();
+        LocalTime newEnd = req.getEndTime() != null ? req.getEndTime() : item.getEndTime();
+        if (newStart != null && newEnd != null) {
+            checkTimeOverlap(dayId, itemId, newStart, newEnd);
+        }
 
         if (req.getTitle() != null) item.setTitle(req.getTitle());
         if (req.getDescription() != null) item.setDescription(req.getDescription());
@@ -201,6 +214,36 @@ public class ItemServiceImpl implements ItemService {
         itemMapper.updateById(item);
 
         return toResp(item);
+    }
+
+    @Override
+    @Transactional
+    public List<ItemResp> batchUpdateTimes(Long userId, Long dayId, ItemBatchTimeUpdateReq req) {
+        validateDayOwnership(userId, dayId);
+        List<ItemResp> results = new ArrayList<>();
+        for (ItemBatchTimeUpdateReq.TimeEntry entry : req.getItems()) {
+            TripItem item = itemMapper.selectById(entry.getId());
+            if (item == null || !item.getDayId().equals(dayId)) continue;
+            item.setStartTime(entry.getStartTime());
+            item.setEndTime(entry.getEndTime());
+            itemMapper.updateById(item);
+            results.add(toResp(item));
+        }
+        return results;
+    }
+
+    private void checkTimeOverlap(Long dayId, Long excludeItemId, LocalTime startTime, LocalTime endTime) {
+        List<TripItem> items = itemMapper.selectList(
+                new LambdaQueryWrapper<TripItem>()
+                        .eq(TripItem::getDayId, dayId));
+        for (TripItem other : items) {
+            if (excludeItemId != null && other.getId().equals(excludeItemId)) continue;
+            if (other.getStartTime() == null || other.getEndTime() == null) continue;
+            // Overlap: A.start < B.end AND A.end > B.start
+            if (startTime.isBefore(other.getEndTime()) && endTime.isAfter(other.getStartTime())) {
+                throw new BusinessException("该时间段与已有行程「" + other.getTitle() + "」冲突");
+            }
+        }
     }
 
     TripItem findAndValidate(Long userId, Long dayId, Long itemId) {

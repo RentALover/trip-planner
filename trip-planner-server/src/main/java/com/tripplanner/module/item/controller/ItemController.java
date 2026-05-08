@@ -62,4 +62,10 @@ public class ItemController {
         return Result.success(itemService.moveToDay(UserContextHolder.getUserId(), dayId,
                 itemId, req.getTargetDayId(), req.getSortOrder()));
     }
+
+    @PutMapping("/batch-times")
+    public Result<List<ItemResp>> batchUpdateTimes(@PathVariable Long dayId,
+                                                    @RequestBody ItemBatchTimeUpdateReq req) {
+        return Result.success(itemService.batchUpdateTimes(UserContextHolder.getUserId(), dayId, req));
+    }
 }

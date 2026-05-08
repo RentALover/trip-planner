@@ -53,6 +53,16 @@ export interface ItemMoveReq {
   sortOrder?: number
 }
 
+export interface BatchTimeEntry {
+  id: number
+  startTime: string
+  endTime: string
+}
+
+export interface ItemBatchTimeUpdateReq {
+  items: BatchTimeEntry[]
+}
+
 export const itemApi = {
   list(dayId: number): Promise<ItemData[]> {
     return api.get(`/days/${dayId}/items`)
@@ -77,5 +87,8 @@ export const itemApi = {
   },
   moveToDay(dayId: number, itemId: number, data: ItemMoveReq): Promise<ItemData> {
     return api.patch(`/days/${dayId}/items/${itemId}/move`, data)
+  },
+  batchUpdateTimes(dayId: number, data: ItemBatchTimeUpdateReq): Promise<ItemData[]> {
+    return api.put(`/days/${dayId}/items/batch-times`, data)
   }
 }

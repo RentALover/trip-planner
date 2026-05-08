@@ -34,6 +34,7 @@
               @editTransport="handleEditTransport"
               @deleteTransport="handleDeleteTransport"
               @reorder="handleReorder"
+              @insertItem="handleInsertItem"
             />
           </template>
           <div v-else class="empty-day-state">
@@ -69,7 +70,8 @@
 
     <!-- Dialogs -->
     <ItemFormDialog v-model="showItemDialog" :editItem="editingItem"
-      @submit="handleItemSubmit" @cancel="editingItem = null" />
+      :suggestedStartTime="suggestedStartTime"
+      @submit="handleItemSubmit" @cancel="editingItem = null; suggestedStartTime = undefined" />
     <TransportFormDialog v-model="showTransportDialog" :editTransport="editingTransport"
       :fromTitle="transportFromTitle" :toTitle="transportToTitle"
       @submit="handleTransportSubmit" @cancel="editingTransport = null" />
@@ -92,7 +94,7 @@ import { usePlannerStore } from '@/stores/planner'
 import { tripApi, type TripData } from '@/api/trip'
 import type { ItemData } from '@/api/item'
 import type { TransportData, TransportCreateReq } from '@/api/transport'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import DayTabs from '@/components/planner/DayTabs.vue'
 import DraggableItemList from '@/components/planner/DraggableItemList.vue'
 import DaySummary from '@/components/planner/DaySummary.vue'
@@ -121,8 +123,44 @@ const deleteMessage = ref('')
 const deleting = ref(false)
 let deleteAction: (() => Promise<void>) | null = null
 
+// Suggested startTime for inserting between existing items
+const suggestedStartTime = ref<string | undefined>(undefined)
+
+// Time utility helpers
+function timeToMinutes(time: string): number {
+  const [h, m] = time.split(':').map(Number)
+  return h * 60 + m
+}
+
+function minutesToTime(minutes: number): string {
+  const h = Math.floor(minutes / 60) % 24
+  const m = minutes % 60
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+}
+
+function findOverlap(items: ItemData[], newStart: string, newEnd: string, excludeId?: number): ItemData | null {
+  for (const item of items) {
+    if (excludeId !== undefined && item.id === excludeId) continue
+    if (!item.startTime || !item.endTime) continue
+    if (newStart < item.endTime && newEnd > item.startTime) {
+      return item
+    }
+  }
+  return null
+}
+
 const currentDayData = computed(() => plannerStore.currentDay)
-const currentItems = computed(() => currentDayData.value?.items || [])
+
+// Sort items by startTime ascending; items without startTime go to the end (sorted by sortOrder)
+const currentItems = computed(() => {
+  const items = currentDayData.value?.items || []
+  return [...items].sort((a, b) => {
+    if (a.startTime && b.startTime) return a.startTime.localeCompare(b.startTime)
+    if (a.startTime) return -1
+    if (b.startTime) return 1
+    return (a.sortOrder || 0) - (b.sortOrder || 0)
+  })
+})
 const currentTransports = computed(() => currentDayData.value?.transports || [])
 
 onMounted(async () => {
@@ -153,11 +191,58 @@ function handleEditItem(item: ItemData) {
   showItemDialog.value = true
 }
 
+function handleInsertItem(prevItem: ItemData, nextItem: ItemData) {
+  editingItem.value = null
+  suggestedStartTime.value = prevItem.endTime || undefined
+  showItemDialog.value = true
+}
+
 async function handleItemSubmit(data: any) {
   if (!activeDayId.value) return
+  const newStart: string | undefined = data.startTime
+  const newEnd: string | undefined = data.endTime
+
   try {
+    // Check for time conflicts if both times are provided
+    if (newStart && newEnd) {
+      const excludeId = editingItem.value?.id
+      const overlap = findOverlap(currentItems.value, newStart, newEnd, excludeId)
+
+      if (overlap) {
+        try {
+          await ElMessageBox.confirm(
+            `时间段与「${overlap.title}」(${overlap.startTime}-${overlap.endTime}) 冲突，是否自动顺延后续行程？`,
+            '时间冲突',
+            { confirmButtonText: '自动顺延', cancelButtonText: '取消', type: 'warning' }
+          )
+
+          // Calculate shift and cascade
+          const shiftMs = timeToMinutes(newEnd) - timeToMinutes(overlap.startTime!)
+          if (shiftMs > 0) {
+            const toShift = currentItems.value.filter(item => {
+              if (excludeId !== undefined && item.id === excludeId) return false
+              if (!item.startTime || !item.endTime) return false
+              return timeToMinutes(item.startTime) >= timeToMinutes(overlap.startTime!)
+            })
+
+            if (toShift.length > 0) {
+              const batchItems = toShift.map(item => ({
+                id: item.id,
+                startTime: minutesToTime(timeToMinutes(item.startTime!) + shiftMs),
+                endTime: minutesToTime(timeToMinutes(item.endTime!) + shiftMs)
+              }))
+              await plannerStore.batchUpdateItemTimes(activeDayId.value!, { items: batchItems })
+            }
+          }
+        } catch {
+          // User cancelled the dialog
+          return
+        }
+      }
+    }
+
+    // Proceed with save
     if (editingItem.value) {
-      // itemType is not updatable — strip it before sending to backend
       const { itemType, ...updateData } = data
       await plannerStore.updateItem(activeDayId.value, editingItem.value.id, updateData)
     } else {
@@ -165,6 +250,7 @@ async function handleItemSubmit(data: any) {
     }
     await plannerStore.fetchDayDetail(tripId, activeDayId.value)
     editingItem.value = null
+    suggestedStartTime.value = undefined
   } catch { /* error handled by interceptor */ }
 }
 

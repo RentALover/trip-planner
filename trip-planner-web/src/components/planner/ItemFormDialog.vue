@@ -49,7 +49,11 @@
 import { ref, reactive, watch, computed } from 'vue'
 import type { ItemData } from '@/api/item'
 
-const props = defineProps<{ modelValue: boolean; editItem?: ItemData | null }>()
+const props = defineProps<{
+  modelValue: boolean
+  editItem?: ItemData | null
+  suggestedStartTime?: string
+}>()
 const emit = defineEmits(['submit', 'cancel', 'update:modelValue'])
 
 const visible = ref(props.modelValue)
@@ -67,7 +71,7 @@ watch(() => props.modelValue, v => {
   } else if (v) {
     form.itemType = 'ATTRACTION'
     form.title = ''
-    form.startTime = ''
+    form.startTime = props.suggestedStartTime || ''
     form.endTime = ''
     form.location = ''
     form.cost = 0

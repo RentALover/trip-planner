@@ -13,4 +13,5 @@ public interface ItemService {
     ReorderResult reorder(Long userId, Long dayId, ItemSortReq req);
     List<ItemResp> batchCreate(Long userId, Long dayId, List<ItemCreateReq> items);
     ItemResp moveToDay(Long userId, Long dayId, Long itemId, Long targetDayId, Double sortOrder);
+    List<ItemResp> batchUpdateTimes(Long userId, Long dayId, ItemBatchTimeUpdateReq req);
 }

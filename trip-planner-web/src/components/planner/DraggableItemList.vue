@@ -5,6 +5,13 @@
         <ItemCard :item="item" @edit="$emit('editItem', item)" @delete="$emit('deleteItem', $event)" />
       </div>
       <div v-if="index < items.length - 1" class="between-items">
+        <!-- Insert item button -->
+        <div class="insert-between" @click="$emit('insertItem', item, items[index + 1])" title="在此插入行程项">
+          <div class="insert-line"></div>
+          <div class="insert-btn">+</div>
+          <div class="insert-line"></div>
+        </div>
+        <!-- Transport connector or add-transport button -->
         <template v-if="getTransport(item.id, items[index + 1].id)">
           <TransportConnector
             :transport="getTransport(item.id, items[index + 1].id)!"
@@ -39,7 +46,7 @@ const props = defineProps<{ items: ItemData[]; transports: TransportData[] }>()
 const emit = defineEmits([
   'addItem', 'editItem', 'deleteItem',
   'addTransport', 'editTransport', 'deleteTransport',
-  'reorder'
+  'reorder', 'insertItem'
 ])
 
 const listRef = ref<HTMLElement>()
@@ -76,6 +83,44 @@ watch(() => props.items.length, () => {
 .draggable-list { min-height: 100px; }
 .item-wrapper { margin-bottom: 2px; }
 .between-items { position: relative; }
+.insert-between {
+  display: flex;
+  align-items: center;
+  margin: 0 0 0 28px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.between-items:hover .insert-between { opacity: 1; }
+.insert-line {
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+.insert-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-placeholder);
+  margin: 0 8px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.insert-between:hover .insert-btn {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: #fdfaf7;
+  box-shadow: 0 1px 4px rgba(196, 123, 90, 0.15);
+}
+
 .add-transport-btn {
   display: flex;
   align-items: center;
