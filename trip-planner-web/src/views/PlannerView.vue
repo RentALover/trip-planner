@@ -156,7 +156,11 @@ function handleEditItem(item: ItemData) {
 async function handleItemSubmit(data: any) {
   if (!activeDayId.value) return
   try {
-    await plannerStore.addItem(activeDayId.value, data)
+    if (editingItem.value) {
+      await plannerStore.updateItem(activeDayId.value, editingItem.value.id, data)
+    } else {
+      await plannerStore.addItem(activeDayId.value, data)
+    }
     await plannerStore.fetchDayDetail(tripId, activeDayId.value)
     editingItem.value = null
   } catch { /* error handled by interceptor */ }

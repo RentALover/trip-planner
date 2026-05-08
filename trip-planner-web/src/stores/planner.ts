@@ -36,6 +36,17 @@ export const usePlannerStore = defineStore('planner', () => {
     return item
   }
 
+  async function updateItem(dayId: number, itemId: number, data: Record<string, unknown>) {
+    const updated = await itemApi.update(dayId, itemId, data)
+    if (currentDay.value && currentDay.value.id === dayId) {
+      const idx = currentDay.value.items.findIndex(i => i.id === itemId)
+      if (idx >= 0) {
+        currentDay.value.items[idx] = { ...currentDay.value.items[idx], ...updated }
+      }
+    }
+    return updated
+  }
+
   async function deleteItem(dayId: number, itemId: number) {
     await itemApi.delete(dayId, itemId)
     if (currentDay.value && currentDay.value.id === dayId) {
@@ -73,6 +84,6 @@ export const usePlannerStore = defineStore('planner', () => {
   return {
     days, currentDay, loading,
     fetchDays, generateDays, fetchDayDetail,
-    addItem, deleteItem, addTransport, deleteTransport, reorderItems
+    addItem, updateItem, deleteItem, addTransport, deleteTransport, reorderItems
   }
 })
