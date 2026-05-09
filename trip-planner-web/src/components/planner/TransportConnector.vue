@@ -10,7 +10,7 @@
       <span v-if="transport.routeInfo" class="transport-route">{{ transport.routeInfo }}</span>
       <span v-if="transport.cost > 0" class="transport-cost">¥{{ transport.cost }}</span>
     </div>
-    <div class="connector-actions">
+    <div v-if="!readonly" class="connector-actions">
       <button class="icon-btn" @click="$emit('edit', transport)">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       </button>
@@ -27,7 +27,7 @@ import type { TransportData } from '@/api/transport'
 import { getTransportLabel } from '@/utils/currency'
 import { formatDuration } from '@/utils/date'
 
-const props = defineProps<{ transport: TransportData }>()
+const props = defineProps<{ transport: TransportData; readonly?: boolean }>()
 defineEmits(['edit', 'delete'])
 
 const transportLabel = computed(() => getTransportLabel(props.transport.transportType))

@@ -1,6 +1,6 @@
 <template>
   <div class="item-card">
-    <div class="drag-handle" title="拖动排序">
+    <div v-if="!readonly" class="drag-handle" title="拖动排序">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="16" y2="18"/></svg>
     </div>
     <div class="item-content">
@@ -23,7 +23,7 @@
       </div>
       <div v-if="item.cost > 0" class="item-cost">¥{{ item.cost }}</div>
     </div>
-    <div class="item-actions">
+    <div v-if="!readonly" class="item-actions">
       <button class="icon-btn" title="编辑" @click="$emit('edit', item)">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       </button>
@@ -40,7 +40,7 @@ import type { ItemData } from '@/api/item'
 import { getItemTypeLabel } from '@/utils/currency'
 import { formatTime } from '@/utils/date'
 
-const props = defineProps<{ item: ItemData }>()
+const props = defineProps<{ item: ItemData; readonly?: boolean }>()
 defineEmits(['edit', 'delete'])
 
 const typeLabel = computed(() => getItemTypeLabel(props.item.itemType))

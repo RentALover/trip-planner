@@ -2,11 +2,10 @@
   <div class="draggable-list" ref="listRef">
     <template v-for="(item, index) in items" :key="item.id">
       <div class="item-wrapper" :data-id="item.id">
-        <ItemCard :item="item" @edit="$emit('editItem', item)" @delete="$emit('deleteItem', $event)" />
+        <ItemCard :item="item" :readonly="readonly" @edit="$emit('editItem', item)" @delete="$emit('deleteItem', $event)" />
       </div>
       <div v-if="index < items.length - 1" class="between-items">
-        <!-- Insert item button -->
-        <div class="insert-between" @click="$emit('insertItem', item, items[index + 1])" title="在此插入行程项">
+        <div v-if="!readonly" class="insert-between" @click="$emit('insertItem', item, items[index + 1])" title="在此插入行程项">
           <div class="insert-line"></div>
           <div class="insert-btn">+</div>
           <div class="insert-line"></div>
@@ -15,11 +14,12 @@
         <template v-if="getTransport(item.id, items[index + 1].id)">
           <TransportConnector
             :transport="getTransport(item.id, items[index + 1].id)!"
+            :readonly="readonly"
             @edit="$emit('editTransport', getTransport(item.id, items[index + 1].id)!)"
             @delete="$emit('deleteTransport', $event)"
           />
         </template>
-        <div v-else class="add-transport-btn" @click="$emit('addTransport', item, items[index + 1])">
+        <div v-else-if="!readonly" class="add-transport-btn" @click="$emit('addTransport', item, items[index + 1])">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           <span>添加交通方式</span>
         </div>
@@ -42,7 +42,7 @@ import type { TransportData } from '@/api/transport'
 import ItemCard from './ItemCard.vue'
 import TransportConnector from './TransportConnector.vue'
 
-const props = defineProps<{ items: ItemData[]; transports: TransportData[] }>()
+const props = defineProps<{ items: ItemData[]; transports: TransportData[]; readonly?: boolean }>()
 const emit = defineEmits([
   'addItem', 'editItem', 'deleteItem',
   'addTransport', 'editTransport', 'deleteTransport',
