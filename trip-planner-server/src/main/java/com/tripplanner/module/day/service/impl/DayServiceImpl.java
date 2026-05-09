@@ -78,7 +78,13 @@ public class DayServiceImpl implements DayService {
             throw new BusinessException("行程天数不能超过60天");
         }
 
-        // Delete existing days
+        // Delete existing items and transports for this trip's days
+        List<TripDay> oldDays = dayMapper.selectList(
+                new LambdaQueryWrapper<TripDay>().eq(TripDay::getTripId, tripId));
+        for (TripDay oldDay : oldDays) {
+            itemMapper.delete(new LambdaQueryWrapper<TripItem>().eq(TripItem::getDayId, oldDay.getId()));
+            transportMapper.delete(new LambdaQueryWrapper<ItemTransport>().eq(ItemTransport::getDayId, oldDay.getId()));
+        }
         dayMapper.delete(new LambdaQueryWrapper<TripDay>().eq(TripDay::getTripId, tripId));
 
         List<TripDay> days = new ArrayList<>();
@@ -92,6 +98,26 @@ public class DayServiceImpl implements DayService {
             dayMapper.insert(day);
             days.add(day);
         }
+
+        // Auto-create transport placeholders: first item on day 1, last item on final day
+        TripDay firstDay = days.get(0);
+        TripDay lastDay = days.get(days.size() - 1);
+
+        TripItem arrivalItem = new TripItem();
+        arrivalItem.setDayId(firstDay.getId());
+        arrivalItem.setTripId(tripId);
+        arrivalItem.setItemType("TRANSPORT");
+        arrivalItem.setTitle("");
+        arrivalItem.setSortOrder(0.0);  // always first
+        itemMapper.insert(arrivalItem);
+
+        TripItem departureItem = new TripItem();
+        departureItem.setDayId(lastDay.getId());
+        departureItem.setTripId(tripId);
+        departureItem.setItemType("TRANSPORT");
+        departureItem.setTitle("");
+        departureItem.setSortOrder(1_000_000.0);  // always last
+        itemMapper.insert(departureItem);
 
         return days.stream().map(this::toResp).collect(Collectors.toList());
     }

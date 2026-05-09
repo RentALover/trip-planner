@@ -8,3 +8,7 @@ spring:
 logging:
   level:
     com.tripplanner: DEBUG
+
+transport:
+  lookup:
+    aviationstack-key: ${AVIATIONSTACK_KEY:}

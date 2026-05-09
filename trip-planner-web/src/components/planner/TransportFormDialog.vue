@@ -10,6 +10,17 @@
           <el-option v-for="t in transportTypes" :key="t.value" :label="t.label" :value="t.value" />
         </el-select>
       </el-form-item>
+      <template v-if="form.transportType === 'FLIGHT' || form.transportType === 'TRAIN'">
+        <el-form-item :label="form.transportType === 'FLIGHT' ? '航班号' : '车次号'">
+          <div class="lookup-row">
+            <el-input v-model="form.transportNumber" :placeholder="form.transportType === 'FLIGHT' ? '如：CA1234' : '如：G123'" class="lookup-input" />
+            <el-button class="lookup-btn" :loading="lookingUp" @click="handleLookup">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><polyline points="21 21 16.65 16.65"/></svg>
+              查询
+            </el-button>
+          </div>
+        </el-form-item>
+      </template>
       <el-form-item label="出发时间">
         <el-time-picker v-model="form.departureTime" format="HH:mm" value-format="HH:mm"
           placeholder="出发时间" style="width: 100%" />
@@ -40,6 +51,8 @@
 <script setup lang="ts">
 import { ref, reactive, watch, computed } from 'vue'
 import type { TransportData } from '@/api/transport'
+import { lookupTransport } from '@/api/transport'
+import { ElMessage } from 'element-plus'
 
 const props = defineProps<{
   modelValue: boolean
@@ -54,6 +67,7 @@ watch(() => props.modelValue, v => {
   visible.value = v
   if (v && props.editTransport) {
     form.transportType = props.editTransport.transportType
+    form.transportNumber = props.editTransport.transportNumber || ''
     form.departureTime = props.editTransport.departureTime || ''
     form.estimatedDuration = props.editTransport.estimatedDuration || null
     form.cost = props.editTransport.cost || 0
@@ -61,6 +75,7 @@ watch(() => props.modelValue, v => {
     form.notes = props.editTransport.notes || ''
   } else if (v) {
     form.transportType = 'SUBWAY'
+    form.transportNumber = ''
     form.departureTime = ''
     form.estimatedDuration = null
     form.cost = 0
@@ -76,12 +91,13 @@ const transportTypes = [
   { label: '步行', value: 'WALK' }, { label: '公交', value: 'BUS' },
   { label: '地铁', value: 'SUBWAY' }, { label: '出租车', value: 'TAXI' },
   { label: '网约车', value: 'RIDE_HAIL' }, { label: '自驾', value: 'SELF_DRIVE' },
-  { label: '共享单车', value: 'BIKE' }
+  { label: '共享单车', value: 'BIKE' },
+  { label: '航班', value: 'FLIGHT' }, { label: '火车/高铁', value: 'TRAIN' }
 ]
 
 const form = reactive({
-  transportType: 'SUBWAY', departureTime: '', estimatedDuration: null as number | null,
-  cost: 0, routeInfo: '', notes: ''
+  transportType: 'SUBWAY', transportNumber: '', departureTime: '',
+  estimatedDuration: null as number | null, cost: 0, routeInfo: '', notes: ''
 })
 
 const rules = {
@@ -90,6 +106,24 @@ const rules = {
 
 const formRef = ref()
 const saving = ref(false)
+const lookingUp = ref(false)
+
+async function handleLookup() {
+  if (!form.transportNumber.trim()) return
+  lookingUp.value = true
+  try {
+    const date = new Date().toISOString().split('T')[0]
+    const result = await lookupTransport(form.transportType, form.transportNumber.trim(), date)
+    if (result.departureTime) form.departureTime = result.departureTime
+    if (result.durationMinutes) form.estimatedDuration = result.durationMinutes
+    if (result.routeInfo) form.routeInfo = result.routeInfo
+    ElMessage.success('班次信息已自动填入')
+  } catch {
+    ElMessage.warning('班次查询失败，请检查班次号和日期，或手动填写')
+  } finally {
+    lookingUp.value = false
+  }
+}
 
 async function handleSubmit() {
   const valid = await formRef.value?.validate().catch(() => false)
@@ -97,6 +131,7 @@ async function handleSubmit() {
   saving.value = true
   emit('submit', {
     transportType: form.transportType,
+    transportNumber: form.transportNumber || undefined,
     departureTime: form.departureTime || undefined,
     estimatedDuration: form.estimatedDuration ?? undefined,
     cost: form.cost || undefined,
@@ -119,4 +154,16 @@ async function handleSubmit() {
   border-left: 3px solid var(--color-primary-light);
 }
 .transport-form { margin-top: 8px; }
+.lookup-row {
+  display: flex;
+  gap: 8px;
+}
+.lookup-input { flex: 1; }
+.lookup-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
 </style>

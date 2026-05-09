@@ -16,6 +16,7 @@ public class TransportResp {
     private LocalTime departureTime;
     private Integer estimatedDuration;
     private BigDecimal cost;
+    private String transportNumber;
     private String routeInfo;
     private String notes;
     private Double sortOrder;

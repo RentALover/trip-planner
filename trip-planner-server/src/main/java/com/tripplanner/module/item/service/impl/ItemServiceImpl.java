@@ -138,14 +138,18 @@ public class ItemServiceImpl implements ItemService {
                 new LambdaQueryWrapper<ItemTransport>()
                         .eq(ItemTransport::getDayId, dayId));
 
-        // Build adjacency map from new ordering
+        // Build adjacency map from new ordering, assigning sequential sort orders per pair
+        Map<String, Integer> pairCounters = new java.util.HashMap<>();
         for (ItemTransport transport : transports) {
             boolean stillAdjacent = false;
             for (int i = 0; i < items.size() - 1; i++) {
                 if (items.get(i).getId().equals(transport.getFromItemId())
                         && items.get(i + 1).getId().equals(transport.getToItemId())) {
                     stillAdjacent = true;
-                    transport.setSortOrder(items.get(i).getSortOrder() + 0.5);
+                    String pairKey = transport.getFromItemId() + "_" + transport.getToItemId();
+                    int seq = pairCounters.getOrDefault(pairKey, 0);
+                    pairCounters.put(pairKey, seq + 1);
+                    transport.setSortOrder(items.get(i).getSortOrder() + 0.5 + seq);
                     transportMapper.updateById(transport);
                     break;
                 }
@@ -233,15 +237,27 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void checkTimeOverlap(Long dayId, Long excludeItemId, LocalTime startTime, LocalTime endTime) {
+        // Check overlap with other items
         List<TripItem> items = itemMapper.selectList(
                 new LambdaQueryWrapper<TripItem>()
                         .eq(TripItem::getDayId, dayId));
         for (TripItem other : items) {
             if (excludeItemId != null && other.getId().equals(excludeItemId)) continue;
             if (other.getStartTime() == null || other.getEndTime() == null) continue;
-            // Overlap: A.start < B.end AND A.end > B.start
             if (startTime.isBefore(other.getEndTime()) && endTime.isAfter(other.getStartTime())) {
                 throw new BusinessException("该时间段与已有行程「" + other.getTitle() + "」冲突");
+            }
+        }
+        // Check overlap with transports (departureTime + estimatedDuration)
+        List<ItemTransport> transports = transportMapper.selectList(
+                new LambdaQueryWrapper<ItemTransport>()
+                        .eq(ItemTransport::getDayId, dayId));
+        for (ItemTransport t : transports) {
+            if (t.getDepartureTime() == null || t.getEstimatedDuration() == null) continue;
+            LocalTime tStart = t.getDepartureTime();
+            LocalTime tEnd = t.getDepartureTime().plusMinutes(t.getEstimatedDuration());
+            if (startTime.isBefore(tEnd) && endTime.isAfter(tStart)) {
+                throw new BusinessException("该时间段与已有交通方式冲突");
             }
         }
     }
@@ -266,13 +282,21 @@ public class ItemServiceImpl implements ItemService {
         return day;
     }
 
+    private static final double STICKY_SORT_THRESHOLD = 900_000.0;
+
     private double getMaxSortOrder(Long dayId) {
         List<TripItem> items = itemMapper.selectList(
                 new LambdaQueryWrapper<TripItem>()
                         .eq(TripItem::getDayId, dayId)
                         .orderByDesc(TripItem::getSortOrder)
-                        .last("LIMIT 1"));
-        return items.isEmpty() ? 0.0 : items.get(0).getSortOrder();
+                        .last("LIMIT 2"));
+        if (items.isEmpty()) return 0.0;
+        double maxSort = items.get(0).getSortOrder();
+        // If the last item is a sticky return-transport placeholder, insert before it
+        if (maxSort >= STICKY_SORT_THRESHOLD && items.size() > 1) {
+            return items.get(1).getSortOrder();
+        }
+        return maxSort;
     }
 
     private ItemResp toResp(TripItem item) {

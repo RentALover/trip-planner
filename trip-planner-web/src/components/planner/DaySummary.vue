@@ -91,12 +91,20 @@ h4 {
   gap: 8px;
 }
 .action-btn {
-  justify-content: center;
-  display: flex;
+  justify-content: flex-start !important;
+  display: flex !important;
   align-items: center;
   gap: 6px;
   border-radius: 8px;
   font-weight: 500;
-  width: 100%;
+  width: 100% !important;
+  padding-left: 12px;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box;
+}
+.action-btn :deep(svg) {
+  flex-shrink: 0;
+  width: 15px;
 }
 </style>

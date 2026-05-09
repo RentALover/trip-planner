@@ -66,20 +66,17 @@ public class TransportServiceImpl implements TransportService {
             throw BusinessException.badRequest("只能为相邻的行程项添加交通方式");
         }
 
-        // Check duplicate
-        Long count = transportMapper.selectCount(
+        // Count existing transports between these items to assign correct sort order
+        Long existingCount = transportMapper.selectCount(
                 new LambdaQueryWrapper<ItemTransport>()
                         .eq(ItemTransport::getFromItemId, req.getFromItemId())
                         .eq(ItemTransport::getToItemId, req.getToItemId()));
-        if (count > 0) {
-            throw BusinessException.badRequest("这两个行程项之间已存在交通方式");
-        }
 
         ItemTransport transport = new ItemTransport();
         BeanUtils.copyProperties(req, transport);
         transport.setDayId(dayId);
         transport.setTripId(day.getTripId());
-        transport.setSortOrder(fromItem.getSortOrder() + 0.5);
+        transport.setSortOrder(fromItem.getSortOrder() + 0.5 + existingCount);
 
         transportMapper.insert(transport);
         return toResp(transport);
@@ -100,6 +97,7 @@ public class TransportServiceImpl implements TransportService {
         if (req.getDepartureTime() != null) transport.setDepartureTime(req.getDepartureTime());
         if (req.getEstimatedDuration() != null) transport.setEstimatedDuration(req.getEstimatedDuration());
         if (req.getCost() != null) transport.setCost(req.getCost());
+        if (req.getTransportNumber() != null) transport.setTransportNumber(req.getTransportNumber());
         if (req.getRouteInfo() != null) transport.setRouteInfo(req.getRouteInfo());
         if (req.getNotes() != null) transport.setNotes(req.getNotes());
 

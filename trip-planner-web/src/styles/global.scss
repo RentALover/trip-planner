@@ -60,6 +60,8 @@ a {
 .transport-ride-hail { border-left-color: $transport-ride-hail !important; .transport-type { color: $transport-ride-hail; } }
 .transport-self-drive { border-left-color: $transport-self-drive !important; .transport-type { color: $transport-self-drive; } }
 .transport-bike { border-left-color: $transport-bike !important; .transport-type { color: $transport-bike; } }
+.transport-flight { border-left-color: $transport-flight !important; .transport-type { color: $transport-flight; } }
+.transport-train { border-left-color: $transport-train !important; .transport-type { color: $transport-train; } }
 
 // ===== Responsive =====
 @media (max-width: 768px) {

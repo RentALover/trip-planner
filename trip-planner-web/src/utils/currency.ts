@@ -6,7 +6,8 @@ export function formatCurrency(amount: number | null | undefined): string {
 export function getTransportLabel(type: string): string {
   const map: Record<string, string> = {
     WALK: '步行', BUS: '公交', SUBWAY: '地铁',
-    TAXI: '出租车', RIDE_HAIL: '网约车', SELF_DRIVE: '自驾', BIKE: '共享单车'
+    TAXI: '出租车', RIDE_HAIL: '网约车', SELF_DRIVE: '自驾', BIKE: '共享单车',
+    FLIGHT: '航班', TRAIN: '火车/高铁'
   }
   return map[type] || type
 }
@@ -22,7 +23,8 @@ export function getItemTypeLabel(type: string): string {
 export function getTransportColor(type: string): string {
   const map: Record<string, string> = {
     WALK: '#66BB6A', BUS: '#42A5F5', SUBWAY: '#26C6DA',
-    TAXI: '#FFA726', RIDE_HAIL: '#AB47BC', SELF_DRIVE: '#78909C', BIKE: '#9CCC65'
+    TAXI: '#FFA726', RIDE_HAIL: '#AB47BC', SELF_DRIVE: '#78909C', BIKE: '#9CCC65',
+    FLIGHT: '#5C6BC0', TRAIN: '#26A69A'
   }
   return map[type] || '#909399'
 }
