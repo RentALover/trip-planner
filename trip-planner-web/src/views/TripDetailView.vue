@@ -12,13 +12,18 @@
         </el-button>
         <el-button class="nav-btn" @click="$router.push(`/trips/${tripId}/budget`)">预算</el-button>
         <el-button class="nav-btn" @click="$router.push(`/trips/${tripId}/checklist`)">备忘录</el-button>
-        <el-button class="nav-btn" @click="$router.push(`/trips/${tripId}/edit`)">编辑</el-button>
       </div>
     </div>
 
     <template v-if="trip">
       <div class="detail-card">
-        <h2>{{ trip.tripName }}</h2>
+        <div class="detail-card-header">
+          <h2>{{ trip.tripName }}</h2>
+          <el-button class="edit-btn" size="small" @click="$router.push(`/trips/${tripId}/edit`)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            编辑信息
+          </el-button>
+        </div>
         <el-descriptions :column="2" border size="small">
           <el-descriptions-item label="目的地">{{ trip.destination }}</el-descriptions-item>
           <el-descriptions-item label="状态">
@@ -166,12 +171,19 @@ async function onDayChange(dayId: number) {
   border: 1px solid var(--color-border-light);
   margin-bottom: 24px;
 }
-.detail-card h2 {
-  margin: 0 0 16px;
+.detail-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.detail-card-header h2 {
+  margin: 0;
   font-family: var(--font-display);
   font-size: 20px;
   font-weight: 700;
 }
+.edit-btn { border-radius: 8px; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 .status-badge {
   font-size: 12px;
   padding: 2px 12px;

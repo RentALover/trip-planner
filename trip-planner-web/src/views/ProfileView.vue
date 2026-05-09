@@ -3,6 +3,18 @@
     <h2 class="page-title">个人信息</h2>
 
     <div class="content-card">
+      <!-- Avatar section -->
+      <div class="avatar-section">
+        <el-avatar :size="80" :src="profile?.avatarUrl" class="profile-avatar" />
+        <div class="avatar-actions">
+          <el-button :loading="uploading" @click="triggerUpload">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            更换头像
+          </el-button>
+          <input ref="fileInput" type="file" accept="image/*" hidden @change="handleFileChange" />
+        </div>
+      </div>
+
       <el-form v-if="profile" :model="profile" ref="formRef" label-width="100px" class="profile-form">
         <el-form-item label="用户名">
           <el-input :model-value="profile.username" disabled />
@@ -56,6 +68,8 @@ import { ElMessage } from 'element-plus'
 const userStore = useUserStore()
 const profile = ref<UserProfile | null>(null)
 const saving = ref(false)
+const uploading = ref(false)
+const fileInput = ref<HTMLInputElement>()
 const passwordFormRef = ref()
 const changingPwd = ref(false)
 
@@ -66,6 +80,27 @@ onMounted(async () => {
   profile.value = userStore.profile
 })
 
+function triggerUpload() {
+  fileInput.value?.click()
+}
+
+async function handleFileChange(e: Event) {
+  const target = e.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+  uploading.value = true
+  try {
+    const url = await userStore.updateAvatar(file)
+    if (profile.value) profile.value.avatarUrl = url
+    ElMessage.success('头像已更新')
+  } catch {
+    ElMessage.error('头像上传失败')
+  } finally {
+    uploading.value = false
+    target.value = ''
+  }
+}
+
 async function handleSave() {
   if (!profile.value) return
   saving.value = true
@@ -74,7 +109,8 @@ async function handleSave() {
       nickname: profile.value.nickname,
       email: profile.value.email,
       phone: profile.value.phone,
-      bio: profile.value.bio
+      bio: profile.value.bio,
+      avatarUrl: profile.value.avatarUrl
     })
     ElMessage.success('保存成功')
   } finally { saving.value = false }
@@ -115,4 +151,28 @@ h3 {
   padding: 24px;
 }
 .profile-form, .password-form { margin: 0; }
+
+.avatar-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--color-border-light);
+}
+.profile-avatar {
+  border: 2px solid var(--color-primary-light);
+  flex-shrink: 0;
+}
+.avatar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.avatar-actions .el-button {
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 </style>

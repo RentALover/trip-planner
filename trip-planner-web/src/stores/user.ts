@@ -44,5 +44,17 @@ export const useUserStore = defineStore('user', () => {
     profile.value = await userApi.getProfile()
   }
 
-  return { token, userInfo, profile, login, register, logout, fetchProfile }
+  async function updateAvatar(file: File) {
+    const url = await userApi.uploadAvatar(file)
+    if (userInfo.value) {
+      userInfo.value.avatarUrl = url
+      localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+    }
+    if (profile.value) {
+      profile.value.avatarUrl = url
+    }
+    return url
+  }
+
+  return { token, userInfo, profile, login, register, logout, fetchProfile, updateAvatar }
 })

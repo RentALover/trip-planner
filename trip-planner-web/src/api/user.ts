@@ -33,5 +33,12 @@ export const userApi = {
   },
   changePassword(data: PasswordChangeReq): Promise<void> {
     return api.put('/user/password', data)
+  },
+  uploadAvatar(file: File): Promise<string> {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.post('/upload/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
   }
 }
