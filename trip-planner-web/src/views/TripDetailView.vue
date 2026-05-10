@@ -59,7 +59,7 @@
 
       <!-- Day-by-day itinerary preview -->
       <div v-if="plannerStore.days.length > 0" class="itinerary-section">
-        <h3 class="section-title">行程预览</h3>
+        <h3 class="section-title">{{ sectionTitle }}</h3>
         <div class="itinerary-body">
           <div class="itinerary-main">
             <DayTabs v-model="activeDayId" :days="plannerStore.days" @change="onDayChange" />
@@ -88,6 +88,12 @@
         <p>还没有日程安排</p>
         <el-button type="primary" @click="$router.push(`/trips/${tripId}/planner`)">去规划行程</el-button>
       </div>
+
+      <!-- Travel journal -- only during or after trip -->
+      <JournalSection
+        v-if="trip && activeDayId && (trip.status === 'IN_PROGRESS' || trip.status === 'COMPLETED')"
+        :dayId="activeDayId"
+      />
     </template>
   </div>
 </template>
@@ -102,6 +108,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import DayTabs from '@/components/planner/DayTabs.vue'
 import DraggableItemList from '@/components/planner/DraggableItemList.vue'
 import DaySummary from '@/components/planner/DaySummary.vue'
+import JournalSection from '@/components/planner/JournalSection.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -127,6 +134,14 @@ const currentItems = computed(() => {
 const currentTransports = computed(() => currentDayData.value?.transports || [])
 
 const statusLabel = computed(() => trip.value ? getStatusLabel(trip.value.status) : '')
+
+const sectionTitle = computed(() => {
+  if (!trip.value) return '行程预览'
+  const map: Record<string, string> = {
+    PLANNING: '行程预览', IN_PROGRESS: '行程进行中', COMPLETED: '行程回顾', CANCELLED: '行程概览'
+  }
+  return map[trip.value.status] || '行程预览'
+})
 
 const changingStatus = ref(false)
 
