@@ -16,8 +16,7 @@
     <div v-loading="loading">
       <template v-if="trips.length > 0">
         <TransitionGroup name="trip-list" tag="div">
-          <TripCard v-for="trip in trips" :key="trip.id" :trip="trip"
-            @delete="handleDelete(trip.id)" />
+          <TripCard v-for="trip in trips" :key="trip.id" :trip="trip" />
         </TransitionGroup>
         <el-pagination
           v-if="total > pageSize"
@@ -38,7 +37,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { tripApi, type TripData } from '@/api/trip'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import TripCard from '@/components/trip/TripCard.vue'
 import TripFilter from '@/components/trip/TripFilter.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
@@ -75,15 +74,6 @@ function handleFilter(val: string) {
   status.value = val
   currentPage.value = 1
   fetchTrips()
-}
-
-async function handleDelete(id: number) {
-  try {
-    await ElMessageBox.confirm('确定删除这个行程吗？', '删除确认', { type: 'warning' })
-    await tripApi.delete(id)
-    ElMessage.success('删除成功')
-    fetchTrips()
-  } catch { /* cancelled */ }
 }
 
 onMounted(fetchTrips)

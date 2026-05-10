@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.tripplanner.common.BusinessException;
 import com.tripplanner.common.PageResult;
+import com.tripplanner.common.enums.TripStatusEnum;
 import com.tripplanner.module.trip.dto.*;
 import com.tripplanner.module.trip.entity.Trip;
 import com.tripplanner.module.trip.mapper.TripMapper;
@@ -120,7 +121,18 @@ public class TripServiceImpl implements TripService {
     @Transactional
     public TripResp updateStatus(Long userId, Long tripId, String status) {
         Trip trip = findAndValidate(userId, tripId);
-        trip.setStatus(status);
+
+        TripStatusEnum newStatus = TripStatusEnum.fromValue(status);
+        if (newStatus == null) {
+            throw new BusinessException("无效的状态值：" + status);
+        }
+
+        TripStatusEnum current = TripStatusEnum.fromValue(trip.getStatus());
+        if (current != null && !current.allowedTransitions().contains(newStatus)) {
+            throw new BusinessException("不允许从「" + current.getLabel() + "」切换到「" + newStatus.getLabel() + "」");
+        }
+
+        trip.setStatus(newStatus.name());
         tripMapper.updateById(trip);
         return toResp(trip);
     }

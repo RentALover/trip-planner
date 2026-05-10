@@ -16,16 +16,6 @@
         </span>
       </div>
     </div>
-    <div class="card-actions" @click.stop>
-      <el-button class="action-btn" @click="$router.push(`/trips/${trip.id}/edit`)">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        编辑
-      </el-button>
-      <el-button class="action-btn danger" @click="$emit('delete', trip.id)">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-        删除
-      </el-button>
-    </div>
   </article>
 </template>
 
@@ -35,7 +25,6 @@ import type { TripData } from '@/api/trip'
 import { getStatusLabel } from '@/utils/currency'
 
 const props = defineProps<{ trip: TripData }>()
-defineEmits(['delete'])
 
 const statusLabel = computed(() => getStatusLabel(props.trip.status))
 </script>
@@ -43,7 +32,6 @@ const statusLabel = computed(() => getStatusLabel(props.trip.status))
 <style scoped>
 .trip-card {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
   background: var(--color-bg-surface);
@@ -51,7 +39,6 @@ const statusLabel = computed(() => getStatusLabel(props.trip.status))
   border-radius: var(--radius-md);
   margin-bottom: 12px;
   cursor: pointer;
-  gap: 16px;
 }
 
 .card-main { flex: 1; min-width: 0; }
@@ -77,6 +64,7 @@ const statusLabel = computed(() => getStatusLabel(props.trip.status))
   flex-shrink: 0;
 }
 .status-planning { background: #f0e6d3; color: #a05d3f; }
+.status-in_progress { background: #dce8f5; color: #3d5a80; }
 .status-completed { background: #e4eddb; color: #5a6e3a; }
 .status-cancelled { background: #f2ebe0; color: #8b7e6a; }
 
@@ -93,29 +81,7 @@ const statusLabel = computed(() => getStatusLabel(props.trip.status))
   color: var(--color-text-secondary);
 }
 
-.card-actions {
-  display: flex;
-  gap: 4px;
-  flex-shrink: 0;
-}
-.action-btn {
-  padding: 6px 12px;
-  border: none;
-  background: transparent;
-  color: var(--color-text-secondary);
-  font-size: 13px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition: all 0.15s;
-}
-.action-btn:hover { background: var(--color-bg-muted); color: var(--color-text-primary); }
-.action-btn.primary:hover { background: #f9f2ee; color: var(--color-primary); }
-.action-btn.danger:hover { background: #fdf1f0; color: var(--color-danger); }
-
 @media (max-width: 768px) {
   .trip-card { flex-direction: column; align-items: stretch; }
-  .card-actions { border-top: 1px solid var(--color-border-light); padding-top: 12px; margin-top: 4px; justify-content: flex-end; }
 }
 </style>

@@ -17,6 +17,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -66,6 +67,9 @@ public class TransportServiceImpl implements TransportService {
             throw BusinessException.badRequest("只能为相邻的行程项添加交通方式");
         }
 
+        // Validate transport time fits between the two items
+        validateTransportTime(req.getDepartureTime(), req.getEstimatedDuration(), fromItem, toItem);
+
         // Count existing transports between these items to assign correct sort order
         Long existingCount = transportMapper.selectCount(
                 new LambdaQueryWrapper<ItemTransport>()
@@ -93,11 +97,22 @@ public class TransportServiceImpl implements TransportService {
     public TransportResp update(Long userId, Long dayId, Long transportId, TransportUpdateReq req) {
         ItemTransport transport = findAndValidate(userId, dayId, transportId);
 
+        // Validate time fit
+        TripItem fromItem = itemMapper.selectById(transport.getFromItemId());
+        TripItem toItem = itemMapper.selectById(transport.getToItemId());
+        if (fromItem != null && toItem != null) {
+            var newDep = req.getDepartureTime() != null ? req.getDepartureTime() : transport.getDepartureTime();
+            var newDur = req.getEstimatedDuration() != null ? req.getEstimatedDuration() : transport.getEstimatedDuration();
+            validateTransportTime(newDep, newDur, fromItem, toItem);
+        }
+
         if (req.getTransportType() != null) transport.setTransportType(req.getTransportType());
         if (req.getDepartureTime() != null) transport.setDepartureTime(req.getDepartureTime());
         if (req.getEstimatedDuration() != null) transport.setEstimatedDuration(req.getEstimatedDuration());
         if (req.getCost() != null) transport.setCost(req.getCost());
         if (req.getTransportNumber() != null) transport.setTransportNumber(req.getTransportNumber());
+        if (req.getDepartureStation() != null) transport.setDepartureStation(req.getDepartureStation());
+        if (req.getArrivalStation() != null) transport.setArrivalStation(req.getArrivalStation());
         if (req.getRouteInfo() != null) transport.setRouteInfo(req.getRouteInfo());
         if (req.getNotes() != null) transport.setNotes(req.getNotes());
 
@@ -161,5 +176,25 @@ public class TransportServiceImpl implements TransportService {
         TransportResp resp = new TransportResp();
         BeanUtils.copyProperties(transport, resp);
         return resp;
+    }
+
+    private void validateTransportTime(LocalTime departureTime, Integer durationMinutes,
+                                        TripItem fromItem, TripItem toItem) {
+        if (departureTime == null) return;
+
+        // Transport must not start before the previous item ends
+        if (fromItem.getEndTime() != null && departureTime.isBefore(fromItem.getEndTime())) {
+            throw new BusinessException("交通出发时间不能早于上一行程结束时间 "
+                    + fromItem.getEndTime());
+        }
+
+        // Transport arrival must not exceed next item start
+        if (durationMinutes != null && toItem.getStartTime() != null) {
+            LocalTime arrivalTime = departureTime.plusMinutes(durationMinutes);
+            if (arrivalTime.isAfter(toItem.getStartTime())) {
+                throw new BusinessException("交通到达时间不能晚于下一行程开始时间 "
+                        + toItem.getStartTime());
+            }
+        }
     }
 }

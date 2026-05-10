@@ -74,7 +74,8 @@
       @submit="handleItemSubmit" @cancel="editingItem = null; suggestedStartTime = undefined" />
     <TransportFormDialog v-model="showTransportDialog" :editTransport="editingTransport"
       :fromTitle="transportFromTitle" :toTitle="transportToTitle"
-      @submit="handleTransportSubmit" @cancel="editingTransport = null" />
+      :suggestedDepartureTime="suggestedTransportTime"
+      @submit="handleTransportSubmit" @cancel="editingTransport = null; suggestedTransportTime = undefined" />
 
     <!-- Delete confirm -->
     <el-dialog v-model="showDeleteConfirm" title="确认删除" width="360px">
@@ -125,6 +126,8 @@ let deleteAction: (() => Promise<void>) | null = null
 
 // Suggested startTime for inserting between existing items
 const suggestedStartTime = ref<string | undefined>(undefined)
+// Suggested departure time for transport between items
+const suggestedTransportTime = ref<string | undefined>(undefined)
 
 // Time utility helpers
 function timeToMinutes(time: string): number {
@@ -197,7 +200,7 @@ function handleInsertItem(prevItem: ItemData, nextItem: ItemData) {
   showItemDialog.value = true
 }
 
-async function handleItemSubmit(data: any) {
+async function handleItemSubmit(data: any, done: (success: boolean) => void) {
   if (!activeDayId.value) return
   const newStart: string | undefined = data.startTime
   const newEnd: string | undefined = data.endTime
@@ -216,7 +219,6 @@ async function handleItemSubmit(data: any) {
             { confirmButtonText: '自动顺延', cancelButtonText: '取消', type: 'warning' }
           )
 
-          // Calculate shift and cascade
           const shiftMs = timeToMinutes(newEnd) - timeToMinutes(overlap.startTime!)
           if (shiftMs > 0) {
             const toShift = currentItems.value.filter(item => {
@@ -235,8 +237,7 @@ async function handleItemSubmit(data: any) {
             }
           }
         } catch {
-          // User cancelled the dialog
-          return
+          return  // user cancelled
         }
       }
     }
@@ -251,7 +252,10 @@ async function handleItemSubmit(data: any) {
     await plannerStore.fetchDayDetail(tripId, activeDayId.value)
     editingItem.value = null
     suggestedStartTime.value = undefined
-  } catch { /* error handled by interceptor */ }
+    done(true)
+  } catch {
+    done(false)
+  }
 }
 
 function handleDeleteItem(itemId: number) {
@@ -269,6 +273,7 @@ function handleAddTransportClick(fromItem: ItemData, toItem: ItemData) {
   transportFromTitle.value = fromItem.title
   transportToTitle.value = toItem.title
   editingTransport.value = null
+  suggestedTransportTime.value = fromItem.endTime || undefined
   showTransportDialog.value = true
 }
 
@@ -281,7 +286,7 @@ function handleEditTransport(transport: TransportData) {
   showTransportDialog.value = true
 }
 
-async function handleTransportSubmit(data: any) {
+async function handleTransportSubmit(data: any, done: (success: boolean) => void) {
   if (!activeDayId.value) return
   try {
     if (editingTransport.value) {
@@ -297,7 +302,11 @@ async function handleTransportSubmit(data: any) {
       await plannerStore.fetchDayDetail(tripId, activeDayId.value)
     }
     editingTransport.value = null
-  } catch { /* handled */ }
+    suggestedTransportTime.value = undefined
+    done(true)
+  } catch {
+    done(false)
+  }
 }
 
 function handleDeleteTransport(transportId: number) {

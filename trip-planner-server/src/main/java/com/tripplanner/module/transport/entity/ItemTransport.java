@@ -22,6 +22,8 @@ public class ItemTransport extends BaseEntity {
     private Integer estimatedDuration;
     private BigDecimal cost;
     private String transportNumber;
+    private String departureStation;
+    private String arrivalStation;
     private String routeInfo;
     private String notes;
     private Double sortOrder;

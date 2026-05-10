@@ -11,6 +11,8 @@ export interface TransportData {
   estimatedDuration: number
   cost: number
   transportNumber: string
+  departureStation: string
+  arrivalStation: string
   routeInfo: string
   notes: string
   sortOrder: number
@@ -23,6 +25,8 @@ export interface TransportCreateReq {
   departureTime?: string
   estimatedDuration?: number
   transportNumber?: string
+  departureStation?: string
+  arrivalStation?: string
   cost?: number
   routeInfo?: string
   notes?: string
@@ -33,9 +37,20 @@ export interface TransportUpdateReq {
   departureTime?: string
   estimatedDuration?: number
   transportNumber?: string
+  departureStation?: string
+  arrivalStation?: string
   cost?: number
   routeInfo?: string
   notes?: string
+}
+
+export interface TransportLookupResult {
+  departureStation: string
+  arrivalStation: string
+  departureTime: string
+  arrivalTime: string
+  durationMinutes: number
+  routeInfo: string
 }
 
 export const transportApi = {
@@ -59,15 +74,6 @@ export const transportApi = {
       params: { fromItemId, toItemId }
     })
   }
-}
-
-export interface TransportLookupResult {
-  departureStation: string
-  arrivalStation: string
-  departureTime: string
-  arrivalTime: string
-  durationMinutes: number
-  routeInfo: string
 }
 
 export function lookupTransport(type: string, number: string, date: string): Promise<TransportLookupResult> {

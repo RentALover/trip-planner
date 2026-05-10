@@ -21,6 +21,12 @@
           </div>
         </el-form-item>
       </template>
+      <el-form-item :label="stationLabels.dep">
+        <el-input v-model="form.departureStation" :placeholder="stationLabels.dep" />
+      </el-form-item>
+      <el-form-item :label="stationLabels.arr">
+        <el-input v-model="form.arrivalStation" :placeholder="stationLabels.arr" />
+      </el-form-item>
       <el-form-item label="出发时间">
         <el-time-picker v-model="form.departureTime" format="HH:mm" value-format="HH:mm"
           placeholder="出发时间" style="width: 100%" />
@@ -52,6 +58,7 @@
 import { ref, reactive, watch, computed } from 'vue'
 import type { TransportData } from '@/api/transport'
 import { lookupTransport } from '@/api/transport'
+import { getStationLabels } from '@/utils/currency'
 import { ElMessage } from 'element-plus'
 
 const props = defineProps<{
@@ -59,15 +66,23 @@ const props = defineProps<{
   editTransport?: TransportData | null
   fromTitle?: string
   toTitle?: string
+  suggestedDepartureTime?: string
 }>()
 const emit = defineEmits(['submit', 'cancel', 'update:modelValue'])
 
 const visible = ref(props.modelValue)
 watch(() => props.modelValue, v => {
   visible.value = v
-  if (v && props.editTransport) {
+  if (!v) {
+    saving.value = false
+    lookingUp.value = false
+    return
+  }
+  if (props.editTransport) {
     form.transportType = props.editTransport.transportType
     form.transportNumber = props.editTransport.transportNumber || ''
+    form.departureStation = props.editTransport.departureStation || ''
+    form.arrivalStation = props.editTransport.arrivalStation || ''
     form.departureTime = props.editTransport.departureTime || ''
     form.estimatedDuration = props.editTransport.estimatedDuration || null
     form.cost = props.editTransport.cost || 0
@@ -76,7 +91,9 @@ watch(() => props.modelValue, v => {
   } else if (v) {
     form.transportType = 'SUBWAY'
     form.transportNumber = ''
-    form.departureTime = ''
+    form.departureStation = ''
+    form.arrivalStation = ''
+    form.departureTime = props.suggestedDepartureTime || ''
     form.estimatedDuration = null
     form.cost = 0
     form.routeInfo = ''
@@ -89,16 +106,17 @@ const isEdit = computed(() => !!props.editTransport)
 
 const transportTypes = [
   { label: '步行', value: 'WALK' }, { label: '公交', value: 'BUS' },
-  { label: '地铁', value: 'SUBWAY' }, { label: '出租车', value: 'TAXI' },
-  { label: '网约车', value: 'RIDE_HAIL' }, { label: '自驾', value: 'SELF_DRIVE' },
-  { label: '共享单车', value: 'BIKE' },
+  { label: '地铁', value: 'SUBWAY' }, { label: '出租车/网约车', value: 'TAXI' },
+  { label: '自驾', value: 'SELF_DRIVE' }, { label: '共享单车', value: 'BIKE' },
   { label: '航班', value: 'FLIGHT' }, { label: '火车/高铁', value: 'TRAIN' }
 ]
 
 const form = reactive({
-  transportType: 'SUBWAY', transportNumber: '', departureTime: '',
-  estimatedDuration: null as number | null, cost: 0, routeInfo: '', notes: ''
+  transportType: 'SUBWAY', transportNumber: '', departureStation: '', arrivalStation: '',
+  departureTime: '', estimatedDuration: null as number | null, cost: 0, routeInfo: '', notes: ''
 })
+
+const stationLabels = computed(() => getStationLabels(form.transportType))
 
 const rules = {
   transportType: [{ required: true, message: '请选择交通方式', trigger: 'change' }]
@@ -117,6 +135,8 @@ async function handleLookup() {
     if (result.departureTime) form.departureTime = result.departureTime
     if (result.durationMinutes) form.estimatedDuration = result.durationMinutes
     if (result.routeInfo) form.routeInfo = result.routeInfo
+    if (result.departureStation) form.departureStation = result.departureStation
+    if (result.arrivalStation) form.arrivalStation = result.arrivalStation
     ElMessage.success('班次信息已自动填入')
   } catch {
     ElMessage.warning('班次查询失败，请检查班次号和日期，或手动填写')
@@ -129,17 +149,25 @@ async function handleSubmit() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
   saving.value = true
+  const savedDepartureTime = form.departureTime
   emit('submit', {
     transportType: form.transportType,
     transportNumber: form.transportNumber || undefined,
+    departureStation: form.departureStation || undefined,
+    arrivalStation: form.arrivalStation || undefined,
     departureTime: form.departureTime || undefined,
     estimatedDuration: form.estimatedDuration ?? undefined,
     cost: form.cost || undefined,
     routeInfo: form.routeInfo || undefined,
     notes: form.notes || undefined
+  }, (success: boolean) => {
+    saving.value = false
+    if (success) {
+      visible.value = false
+    } else {
+      form.departureTime = props.suggestedDepartureTime || ''
+    }
   })
-  saving.value = false
-  visible.value = false
 }
 </script>
 

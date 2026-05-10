@@ -115,6 +115,8 @@ CREATE TABLE IF NOT EXISTS `item_transport` (
     `estimated_duration`  INT          DEFAULT NULL             COMMENT '预计耗时 (分钟)',
     `cost`                DECIMAL(12,2) DEFAULT 0.00            COMMENT '交通费用',
     `transport_number`    VARCHAR(32)  DEFAULT NULL             COMMENT '班次号 (航班号/车次号等)',
+    `departure_station`   VARCHAR(200) DEFAULT NULL             COMMENT '出发站/起点',
+    `arrival_station`     VARCHAR(200) DEFAULT NULL             COMMENT '到达站/终点',
     `route_info`          VARCHAR(500) DEFAULT NULL             COMMENT '路线信息 (公交路线/地铁线路等)',
     `notes`               TEXT         DEFAULT NULL             COMMENT '备注',
     `sort_order`          DOUBLE       NOT NULL DEFAULT 0       COMMENT '排序值 (等于from_item的sort_order + 0.5)',

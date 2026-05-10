@@ -15,7 +15,7 @@
         <span class="stat-value cost">¥{{ dayCost.toFixed(2) }}</span>
       </div>
     </div>
-    <div class="summary-actions">
+    <div v-if="!readonly" class="summary-actions">
       <el-button class="action-btn" @click="$emit('addItem')">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         添加行程项
@@ -33,7 +33,7 @@ import { computed } from 'vue'
 import type { ItemData } from '@/api/item'
 import type { TransportData } from '@/api/transport'
 
-const props = defineProps<{ items: ItemData[]; transports: TransportData[] }>()
+const props = defineProps<{ items: ItemData[]; transports: TransportData[]; readonly?: boolean }>()
 defineEmits(['addItem', 'generateDays'])
 
 const itemCount = computed(() => props.items.length)

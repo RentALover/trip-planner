@@ -8,6 +8,20 @@
           <el-option v-for="t in types" :key="t.value" :label="t.label" :value="t.value" />
         </el-select>
       </el-form-item>
+
+      <!-- Transport number lookup -- visible only when type is TRANSPORT -->
+      <template v-if="form.itemType === 'TRANSPORT'">
+        <el-form-item label="班次号">
+          <div class="lookup-row">
+            <el-input v-model="transportNumber" placeholder="航班号/车次号，如 CA1234、G101" class="lookup-input" />
+            <el-button class="lookup-btn" :loading="lookingUp" @click="handleLookup">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><polyline points="21 21 16.65 16.65"/></svg>
+              查询
+            </el-button>
+          </div>
+        </el-form-item>
+      </template>
+
       <el-form-item label="标题" prop="title">
         <el-input v-model="form.title" :placeholder="titlePlaceholder" />
       </el-form-item>
@@ -48,6 +62,8 @@
 <script setup lang="ts">
 import { ref, reactive, watch, computed } from 'vue'
 import type { ItemData } from '@/api/item'
+import { lookupTransport } from '@/api/transport'
+import { ElMessage } from 'element-plus'
 
 const props = defineProps<{
   modelValue: boolean
@@ -59,7 +75,12 @@ const emit = defineEmits(['submit', 'cancel', 'update:modelValue'])
 const visible = ref(props.modelValue)
 watch(() => props.modelValue, v => {
   visible.value = v
-  if (v && props.editItem) {
+  if (!v) {
+    saving.value = false
+    lookingUp.value = false
+    return
+  }
+  if (props.editItem) {
     form.itemType = props.editItem.itemType
     form.title = props.editItem.title
     form.startTime = props.editItem.startTime || ''
@@ -110,11 +131,45 @@ const rules = {
 
 const formRef = ref()
 const saving = ref(false)
+const lookingUp = ref(false)
+const transportNumber = ref('')
+
+// Map transport types for lookup: TRANSPORT item type → API lookup type
+function inferTransportType(num: string): string {
+  const upper = num.trim().toUpperCase()
+  if (/^[A-Z]{2}\d+$/.test(upper)) return 'FLIGHT'  // e.g. CA1234
+  if (/^[GCDKZT]\d+$/i.test(upper)) return 'TRAIN'   // e.g. G101, D5122
+  return 'FLIGHT'  // default
+}
+
+async function handleLookup() {
+  if (!transportNumber.value.trim()) return
+  lookingUp.value = true
+  try {
+    const date = new Date().toISOString().split('T')[0]
+    const type = inferTransportType(transportNumber.value)
+    const result = await lookupTransport(type, transportNumber.value.trim(), date)
+    if (result.routeInfo) form.title = result.routeInfo
+    if (result.departureTime) form.startTime = result.departureTime
+    if (result.arrivalTime) form.endTime = result.arrivalTime
+    if (result.departureStation && result.arrivalStation) {
+      form.location = result.departureStation + ' → ' + result.arrivalStation
+    } else if (result.departureStation) {
+      form.location = result.departureStation
+    }
+    ElMessage.success('班次信息已自动填入')
+  } catch {
+    ElMessage.warning('班次查询失败，请检查班次号或手动填写')
+  } finally {
+    lookingUp.value = false
+  }
+}
 
 async function handleSubmit() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
   saving.value = true
+  const savedStartTime = form.startTime
   emit('submit', {
     itemType: form.itemType, title: form.title,
     startTime: form.startTime || undefined,
@@ -123,8 +178,29 @@ async function handleSubmit() {
     cost: form.cost || undefined,
     description: form.description || undefined,
     itemDetails: form.itemDetails || undefined
+  }, (success: boolean) => {
+    saving.value = false
+    if (success) {
+      visible.value = false
+    } else {
+      form.startTime = props.suggestedStartTime || ''
+      form.endTime = ''
+    }
   })
-  saving.value = false
-  visible.value = false
 }
 </script>
+
+<style scoped>
+.lookup-row {
+  display: flex;
+  gap: 8px;
+}
+.lookup-input { flex: 1; }
+.lookup-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+</style>

@@ -4,6 +4,9 @@
     <div class="connector-content">
       <span class="transport-type">{{ transportLabel }}</span>
       <span v-if="transport.transportNumber" class="transport-number">{{ transport.transportNumber }}</span>
+      <span v-if="transport.departureStation || transport.arrivalStation" class="transport-stations">
+        {{ transport.departureStation || '?' }} → {{ transport.arrivalStation || '?' }}
+      </span>
       <span v-if="transport.estimatedDuration" class="transport-duration">
         {{ formatDuration(transport.estimatedDuration) }}
       </span>
@@ -57,6 +60,7 @@ const transportLabel = computed(() => getTransportLabel(props.transport.transpor
 .connector-content { flex: 1; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .transport-type { font-weight: 600; font-size: 13px; }
 .transport-number { font-weight: 700; color: var(--color-accent); font-size: 13px; }
+.transport-stations { color: var(--color-text-secondary); font-size: 12px; }
 .transport-duration { color: var(--color-text-secondary); font-size: 12px; }
 .transport-route { color: var(--color-text-secondary); font-size: 12px; }
 .transport-cost { color: var(--color-primary); font-weight: 600; font-size: 13px; margin-left: auto; }

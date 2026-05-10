@@ -6,7 +6,7 @@ export function formatCurrency(amount: number | null | undefined): string {
 export function getTransportLabel(type: string): string {
   const map: Record<string, string> = {
     WALK: '步行', BUS: '公交', SUBWAY: '地铁',
-    TAXI: '出租车', RIDE_HAIL: '网约车', SELF_DRIVE: '自驾', BIKE: '共享单车',
+    TAXI: '出租车/网约车', SELF_DRIVE: '自驾', BIKE: '共享单车',
     FLIGHT: '航班', TRAIN: '火车/高铁'
   }
   return map[type] || type
@@ -23,15 +23,30 @@ export function getItemTypeLabel(type: string): string {
 export function getTransportColor(type: string): string {
   const map: Record<string, string> = {
     WALK: '#66BB6A', BUS: '#42A5F5', SUBWAY: '#26C6DA',
-    TAXI: '#FFA726', RIDE_HAIL: '#AB47BC', SELF_DRIVE: '#78909C', BIKE: '#9CCC65',
+    TAXI: '#FFA726', SELF_DRIVE: '#78909C', BIKE: '#9CCC65',
     FLIGHT: '#5C6BC0', TRAIN: '#26A69A'
   }
   return map[type] || '#909399'
 }
 
+export function getStationLabels(type: string): { dep: string; arr: string } {
+  switch (type) {
+    case 'FLIGHT':
+    case 'TRAIN':
+    case 'SUBWAY':
+    case 'BUS':
+      return { dep: '始发站', arr: '终点站' }
+    case 'TAXI':
+    case 'SELF_DRIVE':
+      return { dep: '出发地', arr: '目的地' }
+    default:
+      return { dep: '起点', arr: '终点' }
+  }
+}
+
 export function getStatusLabel(status: string): string {
   const map: Record<string, string> = {
-    PLANNING: '规划中', COMPLETED: '已完成', CANCELLED: '已取消'
+    PLANNING: '规划中', IN_PROGRESS: '行程中', COMPLETED: '已完成', CANCELLED: '已取消'
   }
   return map[status] || status
 }

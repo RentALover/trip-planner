@@ -19,15 +19,33 @@
       <div class="detail-card">
         <div class="detail-card-header">
           <h2>{{ trip.tripName }}</h2>
-          <el-button class="edit-btn" size="small" @click="$router.push(`/trips/${tripId}/edit`)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            编辑信息
-          </el-button>
+          <div class="detail-card-actions">
+            <el-button class="edit-btn" size="small" @click="$router.push(`/trips/${tripId}/edit`)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              编辑信息
+            </el-button>
+            <el-button class="delete-btn" size="small" :loading="deleting" @click="handleDelete">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              删除
+            </el-button>
+          </div>
         </div>
         <el-descriptions :column="2" border size="small">
           <el-descriptions-item label="目的地">{{ trip.destination }}</el-descriptions-item>
           <el-descriptions-item label="状态">
-            <span class="status-badge" :class="'status-' + trip.status.toLowerCase()">{{ statusLabel }}</span>
+            <el-dropdown trigger="click" @command="handleStatusChange" :disabled="allowedStatuses.length === 0">
+              <span class="status-badge status-clickable" :class="'status-' + trip.status.toLowerCase()">
+                {{ statusLabel }}
+                <svg v-if="allowedStatuses.length > 0" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+              </span>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item v-for="s in allowedStatuses" :key="s.value" :command="s.value">
+                    {{ s.label }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
           </el-descriptions-item>
           <el-descriptions-item label="日期">
             {{ trip.startDate }} ~ {{ trip.endDate }}
@@ -65,6 +83,7 @@
             <DaySummary
               :items="currentItems"
               :transports="currentTransports"
+              :readonly="true"
             />
           </div>
         </div>
@@ -79,21 +98,24 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { usePlannerStore } from '@/stores/planner'
 import { tripApi, type TripData } from '@/api/trip'
 import { getStatusLabel } from '@/utils/currency'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import DayTabs from '@/components/planner/DayTabs.vue'
 import DraggableItemList from '@/components/planner/DraggableItemList.vue'
 import DaySummary from '@/components/planner/DaySummary.vue'
 
 const route = useRoute()
+const router = useRouter()
 const tripId = Number(route.params.id)
 const plannerStore = usePlannerStore()
 
 const trip = ref<TripData | null>(null)
 const loading = ref(false)
 const planLoading = ref(false)
+const deleting = ref(false)
 const activeDayId = ref<number | null>(null)
 
 const currentDayData = computed(() => plannerStore.currentDay)
@@ -110,6 +132,26 @@ const currentTransports = computed(() => currentDayData.value?.transports || [])
 
 const statusLabel = computed(() => trip.value ? getStatusLabel(trip.value.status) : '')
 
+const transitionMap: Record<string, string[]> = {
+  PLANNING: ['IN_PROGRESS', 'CANCELLED'],
+  IN_PROGRESS: ['COMPLETED', 'CANCELLED'],
+  COMPLETED: [],
+  CANCELLED: ['PLANNING']
+}
+const allowedStatuses = computed(() => {
+  if (!trip.value) return []
+  const next = transitionMap[trip.value.status] || []
+  return next.map(v => ({ value: v, label: getStatusLabel(v) }))
+})
+
+async function handleStatusChange(newStatus: string) {
+  try {
+    const updated = await tripApi.updateStatus(tripId, newStatus)
+    if (trip.value) trip.value.status = updated.status
+    ElMessage.success('状态已更新')
+  } catch { /* handled by interceptor */ }
+}
+
 onMounted(async () => {
   loading.value = true
   planLoading.value = true
@@ -125,6 +167,20 @@ onMounted(async () => {
     planLoading.value = false
   }
 })
+
+async function handleDelete() {
+  try {
+    await ElMessageBox.confirm('确定删除此行程？删除后不可恢复。', '确认删除', {
+      confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning'
+    })
+  } catch { return }
+  deleting.value = true
+  try {
+    await tripApi.delete(tripId)
+    ElMessage.success('已删除')
+    router.push('/')
+  } finally { deleting.value = false }
+}
 
 async function onDayChange(dayId: number) {
   activeDayId.value = dayId
@@ -183,14 +239,25 @@ async function onDayChange(dayId: number) {
   font-size: 20px;
   font-weight: 700;
 }
-.edit-btn { border-radius: 8px; display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.detail-card-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.edit-btn, .delete-btn { border-radius: 8px; display: flex; align-items: center; gap: 4px; }
+.delete-btn { color: var(--color-danger); }
 .status-badge {
   font-size: 12px;
   padding: 2px 12px;
   border-radius: 20px;
   font-weight: 500;
 }
+.status-clickable {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: opacity 0.15s;
+}
+.status-clickable:hover { opacity: 0.8; }
 .status-planning { background: #f0e6d3; color: #a05d3f; }
+.status-in_progress { background: #dce8f5; color: #3d5a80; }
 .status-completed { background: #e4eddb; color: #5a6e3a; }
 .status-cancelled { background: #f2ebe0; color: #8b7e6a; }
 
