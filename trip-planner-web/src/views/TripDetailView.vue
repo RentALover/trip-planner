@@ -24,6 +24,14 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               编辑信息
             </el-button>
+            <el-button v-if="trip.status === 'CANCELLED'" class="activate-btn" size="small" :loading="changingStatus" @click="handleReactivate">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              重新启用
+            </el-button>
+            <el-button v-else class="cancel-btn" size="small" :loading="changingStatus" @click="handleCancelTrip">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              取消行程
+            </el-button>
             <el-button class="delete-btn" size="small" :loading="deleting" @click="handleDelete">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
               删除
@@ -33,19 +41,7 @@
         <el-descriptions :column="2" border size="small">
           <el-descriptions-item label="目的地">{{ trip.destination }}</el-descriptions-item>
           <el-descriptions-item label="状态">
-            <el-dropdown trigger="click" @command="handleStatusChange" :disabled="allowedStatuses.length === 0">
-              <span class="status-badge status-clickable" :class="'status-' + trip.status.toLowerCase()">
-                {{ statusLabel }}
-                <svg v-if="allowedStatuses.length > 0" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-              </span>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item v-for="s in allowedStatuses" :key="s.value" :command="s.value">
-                    {{ s.label }}
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
+            <span class="status-badge" :class="'status-' + trip.status.toLowerCase()">{{ statusLabel }}</span>
           </el-descriptions-item>
           <el-descriptions-item label="日期">
             {{ trip.startDate }} ~ {{ trip.endDate }}
@@ -132,24 +128,29 @@ const currentTransports = computed(() => currentDayData.value?.transports || [])
 
 const statusLabel = computed(() => trip.value ? getStatusLabel(trip.value.status) : '')
 
-const transitionMap: Record<string, string[]> = {
-  PLANNING: ['IN_PROGRESS', 'CANCELLED'],
-  IN_PROGRESS: ['COMPLETED', 'CANCELLED'],
-  COMPLETED: [],
-  CANCELLED: ['PLANNING']
-}
-const allowedStatuses = computed(() => {
-  if (!trip.value) return []
-  const next = transitionMap[trip.value.status] || []
-  return next.map(v => ({ value: v, label: getStatusLabel(v) }))
-})
+const changingStatus = ref(false)
 
-async function handleStatusChange(newStatus: string) {
+async function handleCancelTrip() {
   try {
-    const updated = await tripApi.updateStatus(tripId, newStatus)
+    await ElMessageBox.confirm('确定取消此行程？', '确认取消', {
+      confirmButtonText: '确定', cancelButtonText: '返回', type: 'warning'
+    })
+  } catch { return }
+  changingStatus.value = true
+  try {
+    const updated = await tripApi.updateStatus(tripId, 'CANCELLED')
     if (trip.value) trip.value.status = updated.status
-    ElMessage.success('状态已更新')
-  } catch { /* handled by interceptor */ }
+    ElMessage.success('行程已取消')
+  } finally { changingStatus.value = false }
+}
+
+async function handleReactivate() {
+  changingStatus.value = true
+  try {
+    const updated = await tripApi.updateStatus(tripId, 'PLANNING')
+    if (trip.value) trip.value.status = updated.status
+    ElMessage.success('行程已重新启用')
+  } finally { changingStatus.value = false }
 }
 
 onMounted(async () => {
@@ -240,7 +241,9 @@ async function onDayChange(dayId: number) {
   font-weight: 700;
 }
 .detail-card-actions { display: flex; gap: 8px; flex-shrink: 0; }
-.edit-btn, .delete-btn { border-radius: 8px; display: flex; align-items: center; gap: 4px; }
+.edit-btn, .cancel-btn, .activate-btn, .delete-btn { border-radius: 8px; display: flex; align-items: center; gap: 4px; }
+.cancel-btn { color: var(--color-warning); }
+.activate-btn { color: var(--color-success); }
 .delete-btn { color: var(--color-danger); }
 .status-badge {
   font-size: 12px;
@@ -248,14 +251,6 @@ async function onDayChange(dayId: number) {
   border-radius: 20px;
   font-weight: 500;
 }
-.status-clickable {
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  transition: opacity 0.15s;
-}
-.status-clickable:hover { opacity: 0.8; }
 .status-planning { background: #f0e6d3; color: #a05d3f; }
 .status-in_progress { background: #dce8f5; color: #3d5a80; }
 .status-completed { background: #e4eddb; color: #5a6e3a; }

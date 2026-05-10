@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -62,6 +63,7 @@ public class TripServiceImpl implements TripService {
         page = tripMapper.selectPage(page, wrapper);
 
         List<TripResp> records = page.getRecords().stream()
+                .peek(this::refreshStatusIfNeeded)
                 .map(this::toResp)
                 .collect(Collectors.toList());
 
@@ -71,6 +73,7 @@ public class TripServiceImpl implements TripService {
     @Override
     public TripResp getById(Long userId, Long tripId) {
         Trip trip = findAndValidate(userId, tripId);
+        refreshStatusIfNeeded(trip);
         return toResp(trip);
     }
 
@@ -146,6 +149,25 @@ public class TripServiceImpl implements TripService {
             throw BusinessException.forbidden("无权操作此行程");
         }
         return trip;
+    }
+
+    /**
+     * Auto-update status based on dates. CANCELLED is never auto-changed.
+     */
+    private void refreshStatusIfNeeded(Trip trip) {
+        if ("CANCELLED".equals(trip.getStatus())) return;
+        LocalDate today = LocalDate.now();
+        if (!today.isBefore(trip.getStartDate()) && !today.isAfter(trip.getEndDate())) {
+            if (!"IN_PROGRESS".equals(trip.getStatus())) {
+                trip.setStatus("IN_PROGRESS");
+                tripMapper.updateById(trip);
+            }
+        } else if (today.isAfter(trip.getEndDate())) {
+            if (!"COMPLETED".equals(trip.getStatus())) {
+                trip.setStatus("COMPLETED");
+                tripMapper.updateById(trip);
+            }
+        }
     }
 
     private TripResp toResp(Trip trip) {
