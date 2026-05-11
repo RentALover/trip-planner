@@ -340,6 +340,7 @@ async function confirmDelete() {
   max-width: 1200px;
   margin: 0 auto;
   padding: 24px 20px;
+  overflow-x: hidden;
 }
 
 /* Header */
@@ -393,6 +394,7 @@ async function confirmDelete() {
   display: grid;
   grid-template-columns: 1fr 260px;
   gap: 24px;
+  overflow: hidden;
 }
 .planner-sidebar {
   position: sticky;
@@ -400,6 +402,7 @@ async function confirmDelete() {
   align-self: start;
 }
 
+.planner-main { min-width: 0; overflow: hidden; }
 /* Day content */
 .day-content { min-height: 200px; }
 .add-item-bottom {

@@ -12,6 +12,7 @@
         </el-button>
         <el-button class="nav-btn" @click="$router.push(`/trips/${tripId}/budget`)">预算</el-button>
         <el-button class="nav-btn" @click="$router.push(`/trips/${tripId}/checklist`)">备忘录</el-button>
+        <el-button class="nav-btn" @click="$router.push(`/trips/${tripId}/map`)">地图</el-button>
         <el-button class="nav-btn" @click="$router.push(`/trips/${tripId}/export`)">导出</el-button>
       </div>
     </div>
@@ -60,7 +61,10 @@
 
       <!-- Day-by-day itinerary preview -->
       <div v-if="plannerStore.days.length > 0" class="itinerary-section">
-        <h3 class="section-title">{{ sectionTitle }}</h3>
+        <div class="section-header-row">
+          <h3 class="section-title">{{ sectionTitle }}</h3>
+          <WeatherCard v-if="trip && trip.status !== 'COMPLETED' && trip.status !== 'CANCELLED'" :city="trip.destination" :startDate="trip.startDate" :endDate="trip.endDate" inline />
+        </div>
         <div class="itinerary-body">
           <div class="itinerary-main">
             <DayTabs v-model="activeDayId" :days="plannerStore.days" @change="onDayChange" />
@@ -114,6 +118,7 @@ import DraggableItemList from '@/components/planner/DraggableItemList.vue'
 import DaySummary from '@/components/planner/DaySummary.vue'
 import JournalSection from '@/components/planner/JournalSection.vue'
 import PhotoGallery from '@/components/planner/PhotoGallery.vue'
+import WeatherCard from '@/components/weather/WeatherCard.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -223,6 +228,7 @@ async function onDayChange(dayId: number) {
   max-width: 1100px;
   margin: 0 auto;
   padding: 16px 20px;
+  overflow-x: hidden;
 }
 .detail-header {
   display: flex;
@@ -292,8 +298,16 @@ async function onDayChange(dayId: number) {
   border-radius: var(--radius-md);
   padding: 24px 28px;
 }
+.section-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
 .section-title {
-  margin: 0 0 16px;
+  margin: 0;
   font-family: var(--font-display);
   font-size: 17px;
   font-weight: 600;
@@ -302,7 +316,10 @@ async function onDayChange(dayId: number) {
   display: grid;
   grid-template-columns: 1fr 220px;
   gap: 24px;
+  overflow: hidden;
 }
+.itinerary-main { min-width: 0; overflow: hidden; }
+.day-preview { min-width: 0; }
 .itinerary-sidebar {
   position: sticky;
   top: 76px;

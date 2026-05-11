@@ -117,6 +117,7 @@ function formatDate(s: string) {
   max-width: 1100px;
   margin: 0 auto;
   padding: 28px 24px;
+  overflow-x: hidden;
 }
 
 /* Hero */

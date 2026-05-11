@@ -37,6 +37,7 @@ function handleClick(id: string) {
 .day-tabs {
   display: flex;
   gap: 8px;
+  width: 100%;
   margin-bottom: 20px;
   overflow-x: auto;
   padding-bottom: 4px;
