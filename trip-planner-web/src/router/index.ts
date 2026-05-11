@@ -62,6 +62,11 @@ const routes: RouteRecordRaw[] = [
         path: 'trips/:id/export',
         name: 'Export',
         component: () => import('@/views/ExportView.vue')
+      },
+      {
+        path: 'photos',
+        name: 'PhotoAlbum',
+        component: () => import('@/views/PhotoAlbumView.vue')
       }
     ]
   }

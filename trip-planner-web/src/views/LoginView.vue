@@ -15,8 +15,8 @@
             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
           </svg>
         </div>
-        <h1>行程DIY规划</h1>
-        <p class="auth-subtitle">探索世界，从这里开始</p>
+        <h1>Wanderlog</h1>
+        <p class="auth-subtitle">Plan your journey, record your story</p>
       </div>
 
       <el-form :model="form" :rules="rules" ref="formRef" label-width="0" class="auth-form">

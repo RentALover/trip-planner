@@ -92,7 +92,7 @@ async function handleSave() {
       notes: form.notes
     })
     ElMessage.success('保存成功')
-    router.push(`/trips/${tripId}`)
+    router.back()
   } finally { saving.value = false }
 }
 </script>

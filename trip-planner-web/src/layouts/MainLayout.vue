@@ -9,9 +9,13 @@
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
             </svg>
           </div>
-          <span class="logo-text">行程DIY规划</span>
+          <span class="logo-text">Wanderlog</span>
         </router-link>
       </div>
+      <nav class="header-nav">
+        <router-link to="/" class="nav-tab" :class="{ active: $route.path !== '/photos' }">我的行程</router-link>
+        <router-link to="/photos" class="nav-tab" :class="{ active: $route.path === '/photos' }">旅行相册</router-link>
+      </nav>
       <div class="header-right">
         <el-dropdown trigger="click" popper-class="header-dropdown">
           <span class="user-info">
@@ -93,6 +97,23 @@ function handleLogout() {
   font-weight: 600;
   letter-spacing: 0.03em;
 }
+
+.header-nav {
+  display: flex;
+  gap: 4px;
+  margin-left: 32px;
+}
+.nav-tab {
+  padding: 8px 18px;
+  border-radius: 8px;
+  color: #a89880;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.nav-tab:hover { color: #f0e6d3; background: rgba(255,255,255,0.06); }
+.nav-tab.active { color: #f0e6d3; background: rgba(255,255,255,0.1); }
 
 .header-right {
   display: flex;

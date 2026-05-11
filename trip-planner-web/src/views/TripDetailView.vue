@@ -12,6 +12,7 @@
         </el-button>
         <el-button class="nav-btn" @click="$router.push(`/trips/${tripId}/budget`)">预算</el-button>
         <el-button class="nav-btn" @click="$router.push(`/trips/${tripId}/checklist`)">备忘录</el-button>
+        <el-button class="nav-btn" @click="$router.push(`/trips/${tripId}/export`)">导出</el-button>
       </div>
     </div>
 
@@ -94,6 +95,9 @@
         v-if="trip && activeDayId && (trip.status === 'IN_PROGRESS' || trip.status === 'COMPLETED')"
         :dayId="activeDayId"
       />
+
+      <!-- Photo gallery -->
+      <PhotoGallery v-if="trip" :tripId="tripId" :itineraryLocations="itineraryLocations" :tripDestination="trip.destination" />
     </template>
   </div>
 </template>
@@ -109,6 +113,7 @@ import DayTabs from '@/components/planner/DayTabs.vue'
 import DraggableItemList from '@/components/planner/DraggableItemList.vue'
 import DaySummary from '@/components/planner/DaySummary.vue'
 import JournalSection from '@/components/planner/JournalSection.vue'
+import PhotoGallery from '@/components/planner/PhotoGallery.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -132,6 +137,15 @@ const currentItems = computed(() => {
   })
 })
 const currentTransports = computed(() => currentDayData.value?.transports || [])
+
+const itineraryLocations = computed(() => {
+  const locs = new Set<string>()
+  if (trip.value?.destination) locs.add(trip.value.destination)
+  for (const item of currentItems.value) {
+    if (item.location) locs.add(item.location)
+  }
+  return [...locs]
+})
 
 const statusLabel = computed(() => trip.value ? getStatusLabel(trip.value.status) : '')
 
