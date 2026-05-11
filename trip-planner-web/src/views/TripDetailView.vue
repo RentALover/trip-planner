@@ -11,7 +11,7 @@
           进入规划
         </el-button>
         <el-button class="nav-btn" @click="$router.push(`/trips/${tripId}/budget`)">预算</el-button>
-        <el-button class="nav-btn" @click="$router.push(`/trips/${tripId}/checklist`)">备忘录</el-button>
+        <el-button class="nav-btn" @click="$router.push(`/trips/${tripId}/checklist`)">行前清单</el-button>
         <el-button class="nav-btn" @click="$router.push(`/trips/${tripId}/map`)">地图</el-button>
         <el-button class="nav-btn" @click="$router.push(`/trips/${tripId}/export`)">导出</el-button>
       </div>

@@ -5,7 +5,7 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
         返回
       </button>
-      <h2>旅行备忘录</h2>
+      <h2>行前清单</h2>
       <el-button class="preset-btn" @click="handleLoadPreset" :loading="loadingPreset">加载预设清单</el-button>
     </div>
 
