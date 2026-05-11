@@ -115,7 +115,7 @@ onMounted(fetchItems)
 </script>
 
 <style scoped>
-.form-page { max-width: 700px; }
+.form-page { max-width: 680px; }
 .page-header {
   display: flex;
   align-items: center;

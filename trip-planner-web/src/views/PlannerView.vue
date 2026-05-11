@@ -339,7 +339,7 @@ async function confirmDelete() {
 .planner-page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 16px 20px;
+  padding: 24px 20px;
 }
 
 /* Header */

@@ -73,7 +73,7 @@ async function handleLogin() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f9f5ed;
+  background: var(--color-bg-page);
   overflow: hidden;
   position: relative;
 }
@@ -89,36 +89,30 @@ async function handleLogin() {
   opacity: 0.06;
 }
 .bg-circle-1 {
-  width: 600px;
-  height: 600px;
-  background: #c47b5a;
-  top: -200px;
-  right: -150px;
+  width: 600px; height: 600px;
+  background: var(--color-primary);
+  top: -200px; right: -150px;
 }
 .bg-circle-2 {
-  width: 400px;
-  height: 400px;
-  background: #3d6b6b;
-  bottom: -100px;
-  left: -100px;
+  width: 400px; height: 400px;
+  background: var(--color-accent);
+  bottom: -100px; left: -100px;
 }
 .bg-line {
   position: absolute;
-  top: 15%;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(196, 123, 90, 0.12), transparent);
+  top: 15%; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+  opacity: 0.12;
 }
 
 .auth-card {
   position: relative;
-  background: #fffdf7;
+  background: var(--color-bg-surface);
   padding: 48px 40px 36px;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(44, 36, 22, 0.08), 0 1px 4px rgba(44, 36, 22, 0.04);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md), var(--shadow-sm);
   width: 400px;
-  border: 1px solid #f2ebe0;
+  border: 1px solid var(--color-border-light);
 }
 
 .auth-header {
@@ -129,24 +123,22 @@ async function handleLogin() {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
+  width: 56px; height: 56px;
   border-radius: 14px;
   background: linear-gradient(135deg, #f0e6d3, #f9f2ee);
-  color: #c47b5a;
+  color: var(--color-primary);
   margin-bottom: 16px;
 }
 .auth-header h1 {
   font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 700;
-  color: #2c2416;
+  font-size: 22px; font-weight: 700;
+  color: var(--color-text-primary);
   margin: 0 0 6px;
   letter-spacing: 0.04em;
 }
 .auth-subtitle {
   font-size: 14px;
-  color: #8b7e6a;
+  color: var(--color-text-secondary);
   margin: 0;
 }
 
@@ -164,11 +156,11 @@ async function handleLogin() {
 .auth-footer {
   text-align: center;
   font-size: 14px;
-  color: #8b7e6a;
+  color: var(--color-text-secondary);
   margin: 20px 0 0;
 }
 .auth-footer a {
-  color: #c47b5a;
+  color: var(--color-primary);
   font-weight: 500;
 }
 </style>

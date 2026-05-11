@@ -33,6 +33,10 @@ defineEmits(['action'])
 .empty-icon {
   color: #c8bdab;
   margin-bottom: 16px;
+  transition: transform 0.3s ease;
+}
+.empty-state:hover .empty-icon {
+  transform: translateY(-4px);
 }
 .empty-desc {
   font-size: 14px;

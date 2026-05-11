@@ -130,7 +130,7 @@ async function handleChangePassword() {
 </script>
 
 <style scoped>
-.form-page { max-width: 600px; }
+.form-page { max-width: 680px; }
 .page-title {
   font-family: var(--font-display);
   font-size: 22px;
