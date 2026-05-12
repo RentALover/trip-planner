@@ -78,12 +78,12 @@ public class DayServiceImpl implements DayService {
             throw new BusinessException("行程天数不能超过60天");
         }
 
-        // Delete existing items and transports for this trip's days
+        // Physical delete existing items, transports and days for this trip
         List<TripDay> oldDays = dayMapper.selectList(
                 new LambdaQueryWrapper<TripDay>().eq(TripDay::getTripId, tripId));
         for (TripDay oldDay : oldDays) {
-            itemMapper.delete(new LambdaQueryWrapper<TripItem>().eq(TripItem::getDayId, oldDay.getId()));
-            transportMapper.delete(new LambdaQueryWrapper<ItemTransport>().eq(ItemTransport::getDayId, oldDay.getId()));
+            transportMapper.hardDeleteByDayId(oldDay.getId());
+            itemMapper.hardDeleteByDayId(oldDay.getId());
         }
         dayMapper.delete(new LambdaQueryWrapper<TripDay>().eq(TripDay::getTripId, tripId));
 
