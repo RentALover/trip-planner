@@ -9,6 +9,10 @@ logging:
   level:
     com.tripplanner: INFO
 
+transport:
+  lookup:
+    aviationstack-key: ${AVIATIONSTACK_KEY:}
+
 tripplanner:
   alioss:
     endpoint: oss-cn-beijing.aliyuncs.com
