@@ -9,9 +9,11 @@
     <div class="auth-card">
       <div class="auth-header">
         <div class="auth-icon">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="10" r="3"/>
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+          <svg width="48" height="48" viewBox="0 0 64 64" fill="none">
+            <circle cx="32" cy="32" r="30" fill="currentColor" opacity="0.12"/>
+            <polygon points="32,14 25,36 32,31 39,36" fill="currentColor" opacity="0.9"/>
+            <polygon points="32,50 25,32 32,37 39,32" fill="currentColor" opacity="0.5"/>
+            <circle cx="32" cy="32" r="3" fill="currentColor"/>
           </svg>
         </div>
         <h1>加入我们</h1>
@@ -29,8 +31,8 @@
         <el-form-item prop="nickname">
           <el-input v-model="form.nickname" placeholder="昵称 (选填)" size="large" />
         </el-form-item>
-        <el-form-item>
-          <el-button type="primary" :loading="loading" block size="large" class="auth-btn" @click="handleRegister">
+        <el-form-item class="auth-btn-wrapper">
+          <el-button type="primary" :loading="loading" size="large" class="auth-btn" @click="handleRegister">
             注册
           </el-button>
         </el-form-item>
@@ -134,11 +136,15 @@ async function handleRegister() {
 .auth-form {
   margin-top: 8px;
 }
+.auth-btn-wrapper :deep(.el-form-item__content) {
+  justify-content: center;
+}
 .auth-btn {
   border-radius: 10px;
   font-weight: 600;
   letter-spacing: 0.03em;
   height: 44px;
+  padding: 0 48px;
 }
 .auth-footer {
   text-align: center;
