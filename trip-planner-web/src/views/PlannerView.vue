@@ -7,9 +7,9 @@
       </button>
       <h2 v-if="trip" class="planner-title">{{ trip.tripName }}</h2>
       <div class="header-actions">
-        <el-button class="action-btn" @click="handleGenerateDays" :disabled="!trip">
+        <el-button class="action-btn" @click="handleRegenerate" :disabled="!trip || plannerStore.days.length === 0">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-          自动生成日程
+          重新规划
         </el-button>
         <el-button class="action-btn" @click="$router.push(`/trips/${tripId}/budget`)">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -172,6 +172,9 @@ onMounted(async () => {
   if (plannerStore.days.length > 0) {
     activeDayId.value = plannerStore.days[0].id
     await plannerStore.fetchDayDetail(tripId, activeDayId.value)
+  } else {
+    // Auto-generate for new trip with no days
+    await handleGenerateDays()
   }
 })
 
@@ -186,6 +189,20 @@ async function handleGenerateDays() {
   if (plannerStore.days.length > 0) {
     activeDayId.value = plannerStore.days[0].id
     await plannerStore.fetchDayDetail(tripId, activeDayId.value)
+  }
+}
+
+async function handleRegenerate() {
+  try {
+    await ElMessageBox.confirm(
+      '这将清除当前所有日程安排并重新生成，确定继续吗？',
+      '重新规划',
+      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
+    )
+    await handleGenerateDays()
+    ElMessage.success('日程已重新规划')
+  } catch {
+    // user cancelled
   }
 }
 

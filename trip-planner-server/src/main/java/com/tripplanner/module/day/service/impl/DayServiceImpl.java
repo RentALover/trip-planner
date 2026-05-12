@@ -85,7 +85,7 @@ public class DayServiceImpl implements DayService {
             transportMapper.hardDeleteByDayId(oldDay.getId());
             itemMapper.hardDeleteByDayId(oldDay.getId());
         }
-        dayMapper.delete(new LambdaQueryWrapper<TripDay>().eq(TripDay::getTripId, tripId));
+        dayMapper.hardDeleteByTripId(tripId);
 
         List<TripDay> days = new ArrayList<>();
         for (int i = 0; i < daysBetween; i++) {
