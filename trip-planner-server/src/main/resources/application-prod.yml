@@ -8,3 +8,10 @@ spring:
 logging:
   level:
     com.tripplanner: INFO
+
+tripplanner:
+  alioss:
+    endpoint: oss-cn-beijing.aliyuncs.com
+    access-key-id: ${ALIOSS_ACCESS_KEY_ID}
+    access-key-secret: ${ALIOSS_ACCESS_KEY_SECRET}
+    bucket-name: trip-planner
